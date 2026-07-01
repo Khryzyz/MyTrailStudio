@@ -1,0 +1,37 @@
+{
+  "input": {
+    "videos_dir": "input",
+    "gpx_dir": "input",
+    "timezone": "America/Bogota",
+    "video_mode": "normal",
+    "hyperlapse_speed": 1.0,
+    "route_name": ""
+  },
+  "output": {
+    "dir": "output",
+    "resolution": "1080p",
+    "fps": 30,
+    "hyperlapse_speed": 3.5,
+    "remove_audio": true,
+    "single_final_video": true,
+    "preview": {
+      "add": false,
+      "time": 10
+    },
+    "closing_screen": {
+      "add": true,
+      "message": "Ruta Finalizada",
+      "time": 3
+    }
+  },
+  "setting": {
+    "layout": {
+      "theme": "sport",
+      "font_path": "resources/font/font.otf",
+      "overlay_fps": 10,
+      "pulse_map_point": true,
+      "show_gps_unavailable": true,
+      "keep_temp_frames": true
+    }
+  }
+}

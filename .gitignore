@@ -1,0 +1,32 @@
+# Archivos pesados / entrada
+input/*.mp4
+input/*.MP4
+input/*.mov
+input/*.MOV
+input/*.gpx
+input/*.GPX
+
+# Salidas generadas
+output/frames/
+output/final/
+output/previews/
+output/data/
+
+# Temporales
+temp/
+_temporales_borrar/
+
+# Recursos binarios / fuentes
+resources/font/*.otf
+resources/font/*.ttf
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Videos/imágenes sueltas
+*.mp4
+*.MP4
+*.png
+*.jpg
+*.jpeg
