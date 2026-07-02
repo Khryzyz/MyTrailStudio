@@ -2,7 +2,7 @@ import json
 import math
 import os
 import shutil
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from cleanup_pipeline import cleanup_auto_after_render
 from ffmpeg_renderer import concat_videos, create_closing_clip, render_video_clip
@@ -38,6 +38,67 @@ def print_render_summary(manifest):
     print("Pantalla final:", closing_add, "-", closing_seconds, "s")
     print("Limpiar al terminar:", config["output"].get("cleanup_after_render", True))
     print("")
+
+
+def write_render_report(manifest, manifest_path, final_path):
+    config = manifest["config"]
+    videos = manifest["videos"]
+    output_dir = manifest["resolved_paths"]["output_dir"]
+    final_dir = os.path.join(output_dir, "final")
+    os.makedirs(final_dir, exist_ok=True)
+
+    input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
+    input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
+
+    report = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "final_output": final_path,
+        "manifest_path": manifest_path,
+        "videos": [
+            {
+                "name": v["name"],
+                "path": v["path"],
+                "start_utc": v["start_utc"],
+                "real_end_utc": v["real_end_utc"],
+                "gps_status": v["gps_status"],
+            }
+            for v in videos
+        ],
+        "gpx": manifest["gpx"],
+        "input_duration_file_seconds": round(input_file_seconds, 2),
+        "input_duration_real_seconds": round(input_real_seconds, 2),
+        "output_hyperlapse_speed": config["output"]["hyperlapse_speed"],
+        "resolution": config["output"]["resolution"],
+        "fps": config["output"]["fps"],
+        "remove_audio": config["output"]["remove_audio"],
+        "closing_screen": config["output"]["closing_screen"],
+        "transition": config["output"].get("transition"),
+        "errors": [],
+        "warnings": [],
+    }
+
+    json_path = os.path.join(final_dir, "render_report.json")
+    txt_path = os.path.join(final_dir, "render_report.txt")
+
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write("DJI / GPX Overlay Render Report\n")
+        f.write(f"Generado UTC: {report['generated_at_utc']}\n")
+        f.write(f"Final: {final_path}\n")
+        f.write(f"GPX: {manifest['gpx']['name']}\n")
+        f.write(f"Videos: {len(videos)}\n")
+        for idx, video in enumerate(videos, start=1):
+            f.write(f"  {idx}. {video['name']} ({video['start_utc']} -> {video['real_end_utc']})\n")
+        f.write(f"Resolucion: {config['output']['resolution']}\n")
+        f.write(f"FPS: {config['output']['fps']}\n")
+        f.write(f"Remove audio: {config['output']['remove_audio']}\n")
+
+    print("")
+    print("Reporte final creado:")
+    print(json_path)
+    print(txt_path)
 
 
 def render_overlay_frames(root, manifest, video, gpx_points, frames_dir):
@@ -191,6 +252,8 @@ def main():
     print("")
     print("Render final completado:")
     print(final_path)
+
+    write_render_report(manifest, manifest_path, final_path)
 
     if config["output"].get("cleanup_after_render", True):
         cleanup_auto_after_render(root)
