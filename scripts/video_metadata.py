@@ -1,8 +1,7 @@
 import json
 import os
-import re
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from pipeline_utils import parse_dt
 
@@ -38,29 +37,16 @@ def parse_rate(value):
         return None
 
 
-def parse_filename_start(name):
-    match = re.search(r"(?<!\d)(\d{8})[_-](\d{6})(?!\d)", name)
-    if not match:
-        return None
-
-    try:
-        local_dt = datetime.strptime("".join(match.groups()), "%Y%m%d%H%M%S")
-    except ValueError:
-        return None
-
-    return local_dt.replace(tzinfo=timezone.utc)
-
-
 def sort_videos_by_start(videos):
-    missing = [v["name"] for v in videos if not v["start"]]
+    missing = [v["name"] for v in videos if not v["creation_time_raw"]]
     if missing:
         names = ", ".join(missing)
-        raise Exception(f"Falta hora de inicio para: {names}. No hay creation_time ni fecha reconocible en el nombre.")
+        raise Exception(f"Falta creation_time en metadata ffprobe para: {names}. No se puede ordenar sin esa hora.")
 
     invalid = [
         f'{v["name"]} (creation_time={v["creation_time_raw"]})'
         for v in videos
-        if v["creation_time_raw"] and v["start_source"] == "unknown"
+        if not v["start"]
     ]
     if invalid:
         names = ", ".join(invalid)
@@ -69,7 +55,7 @@ def sort_videos_by_start(videos):
     return sorted(videos, key=lambda v: (v["start"], v["name"].lower()))
 
 
-def ffprobe_video(video_path, fallback_tz=None):
+def ffprobe_video(video_path):
     cmd = [
         "ffprobe",
         "-v", "error",
@@ -107,11 +93,6 @@ def ffprobe_video(video_path, fallback_tz=None):
 
     start = parse_dt(creation_time)
     start_source = "ffprobe" if start else "unknown"
-
-    if not start and fallback_tz:
-        start = parse_filename_start(os.path.basename(video_path))
-        if start:
-            start_source = "filename_utc"
 
     end = start + timedelta(seconds=duration) if start else None
 

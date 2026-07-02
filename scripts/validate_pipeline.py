@@ -201,7 +201,7 @@ def main():
 
     video_results = []
     target_w, target_h = RESOLUTION_MAP[config["output"]["resolution"]]
-    probed_videos = sort_videos_by_start([ffprobe_video(video_path, tz) for video_path in videos])
+    probed_videos = sort_videos_by_start([ffprobe_video(video_path) for video_path in videos])
 
     for video in probed_videos:
         analysis = analyze_video(video, gpx, config["input"]["video_mode"], config["input"]["hyperlapse_speed"])
