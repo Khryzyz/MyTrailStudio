@@ -8,7 +8,7 @@ from cleanup_pipeline import cleanup_auto_after_render
 from ffmpeg_renderer import concat_videos, create_closing_clip, render_video_clip
 from frame_renderer import render_frames_parallel
 from gpx_track import enrich_points, read_gpx_points
-from pipeline_utils import parse_dt, safe_name
+from pipeline_utils import estimated_output_seconds, ffmpeg_output_speed_factor, input_real_speed, parse_dt, safe_name
 
 def artifact_exists(path):
     return os.path.exists(path) and os.path.getsize(path) > 0
@@ -20,16 +20,19 @@ def value_token(value):
 
 def render_profile_name(config):
     input_mode = config["input"]["video_mode"]
-    input_speed = config["input"]["hyperlapse_speed"] if input_mode == "hyperlapse" else 1.0
+    input_speed = input_real_speed(config)
     output = config["output"]
     transition = output.get("transition", {})
 
     parts = [
+        "desiredrealv2",
         "in",
         input_mode,
         value_token(input_speed),
         "out",
         value_token(output["hyperlapse_speed"]),
+        "ffmpeg",
+        value_token(round(ffmpeg_output_speed_factor(config), 6)),
         output["resolution"],
         f"{output['fps']}fps",
         "audiooff" if output["remove_audio"] else "audioon",
@@ -65,13 +68,15 @@ def print_render_summary(manifest):
     config = manifest["config"]
     videos = manifest["videos"]
     overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
-    output_speed = float(config["output"]["hyperlapse_speed"])
     closing_add = bool(config["output"]["closing_screen"]["add"])
     closing_seconds = int(config["output"]["closing_screen"]["time"]) if closing_add else 0
 
     input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
     input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
-    estimated_final_seconds = (input_file_seconds / output_speed) + closing_seconds
+    estimated_final_seconds = sum(
+        estimated_output_seconds(config, v["duration_file_seconds"], v.get("real_duration_seconds"))
+        for v in videos
+    ) + closing_seconds
     estimated_frames = sum(math.ceil(float(v["duration_file_seconds"]) * overlay_fps) for v in videos)
 
     print("")
@@ -79,6 +84,8 @@ def print_render_summary(manifest):
     print("Videos:", len(videos))
     print("Duracion total real:", str(timedelta(seconds=round(input_real_seconds))))
     print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
+    print("Factor tecnico FFmpeg:", round(ffmpeg_output_speed_factor(config), 6), "x")
     print("Overlay FPS:", overlay_fps)
     print("Frames aproximados:", estimated_frames)
     print("Carpeta salida:", os.path.join(manifest["resolved_paths"]["output_dir"], "final"))
@@ -96,6 +103,10 @@ def write_render_report(manifest, manifest_path, final_path, render_profile):
 
     input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
     input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
+    estimated_final_seconds = sum(
+        estimated_output_seconds(config, v["duration_file_seconds"], v.get("real_duration_seconds"))
+        for v in videos
+    )
 
     report = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -115,7 +126,10 @@ def write_render_report(manifest, manifest_path, final_path, render_profile):
         "gpx": manifest["gpx"],
         "input_duration_file_seconds": round(input_file_seconds, 2),
         "input_duration_real_seconds": round(input_real_seconds, 2),
+        "estimated_output_video_seconds_without_closing": round(estimated_final_seconds, 2),
         "output_hyperlapse_speed": config["output"]["hyperlapse_speed"],
+        "output_hyperlapse_speed_meaning": "velocidad final deseada respecto al tiempo real de la ruta",
+        "ffmpeg_speed_factor": round(ffmpeg_output_speed_factor(config), 6),
         "resolution": config["output"]["resolution"],
         "fps": config["output"]["fps"],
         "remove_audio": config["output"]["remove_audio"],

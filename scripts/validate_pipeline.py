@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from gpx_track import read_gpx
 from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_float_range, parse_overrides
-from pipeline_utils import fmt, resolve_path, safe_name
+from pipeline_utils import estimated_output_seconds, ffmpeg_output_speed_factor, fmt, resolve_path, safe_name
 from video_metadata import analyze_video, apply_creation_time_override, ffprobe_video, list_video_files, sort_videos_by_start
 
 def validate_config(config, root):
@@ -158,13 +158,15 @@ def print_validate_only_summary(manifest):
     config = manifest["config"]
     videos = manifest["videos"]
     overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
-    output_speed = float(config["output"]["hyperlapse_speed"])
     closing_add = bool(config["output"]["closing_screen"]["add"])
     closing_seconds = int(config["output"]["closing_screen"]["time"]) if closing_add else 0
 
     input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
     input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
-    estimated_final_seconds = (input_file_seconds / output_speed) + closing_seconds
+    estimated_final_seconds = sum(
+        estimated_output_seconds(config, v["duration_file_seconds"], v.get("real_duration_seconds"))
+        for v in videos
+    ) + closing_seconds
     estimated_frames = sum(math.ceil(float(v["duration_file_seconds"]) * overlay_fps) for v in videos)
 
     print("")
@@ -179,6 +181,8 @@ def print_validate_only_summary(manifest):
     print("Duracion total archivos:", str(timedelta(seconds=round(input_file_seconds))))
     print("Duracion real total:", str(timedelta(seconds=round(input_real_seconds))))
     print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
+    print("Factor tecnico FFmpeg:", round(ffmpeg_output_speed_factor(config), 6), "x")
     print("Frames estimados:", estimated_frames)
     print("Resolucion final:", config["output"]["resolution"])
     print("FPS final:", config["output"]["fps"])

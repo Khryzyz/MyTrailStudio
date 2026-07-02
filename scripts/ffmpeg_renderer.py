@@ -3,7 +3,7 @@ import subprocess
 from datetime import timedelta, timezone
 
 from overlay_renderer import render_closing_frame
-from pipeline_utils import parse_dt
+from pipeline_utils import estimated_output_seconds, ffmpeg_output_speed_factor, parse_dt
 
 
 RESOLUTION_SCALE = {
@@ -32,7 +32,7 @@ def render_video_clip(
 
     overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
     output_fps = int(config["output"]["fps"])
-    output_speed = float(config["output"]["hyperlapse_speed"])
+    output_speed = ffmpeg_output_speed_factor(config)
     resolution = config["output"]["resolution"]
     remove_audio = bool(config["output"]["remove_audio"])
     threads = ffmpeg_threads(config)
@@ -51,7 +51,11 @@ def render_video_clip(
     ]
 
     if transition_enabled:
-        output_duration = float(video["duration_seconds"]) / output_speed
+        output_duration = estimated_output_seconds(
+            config,
+            video["duration_seconds"],
+            video.get("real_duration_seconds")
+        )
         fade_time = min(float(transition_time), output_duration)
 
         if not is_first_clip:

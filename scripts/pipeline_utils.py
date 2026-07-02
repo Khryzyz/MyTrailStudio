@@ -46,6 +46,24 @@ def load_font(path, size):
     return ImageFont.load_default()
 
 
+def input_real_speed(config):
+    if config["input"]["video_mode"] == "hyperlapse":
+        return float(config["input"]["hyperlapse_speed"])
+    return 1.0
+
+
+def ffmpeg_output_speed_factor(config):
+    desired_output_speed = float(config["output"]["hyperlapse_speed"])
+    return desired_output_speed / input_real_speed(config)
+
+
+def estimated_output_seconds(config, file_seconds, real_seconds=None):
+    desired_output_speed = float(config["output"]["hyperlapse_speed"])
+    if real_seconds is None:
+        real_seconds = float(file_seconds) * input_real_speed(config)
+    return float(real_seconds) / desired_output_speed
+
+
 def safe_name(value):
     keep = []
     for c in value:
