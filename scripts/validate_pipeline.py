@@ -48,12 +48,14 @@ def validate_config(config, root):
         errors.append("output.fps debe ser 15|30|60.")
 
     try:
-        config["output"]["hyperlapse_speed"] = parse_float_1(config["output"]["hyperlapse_speed"], "output.hyperlapse_speed")
+        config["output"]["hyperlapse_speed"] = parse_float_range(
+            config["output"]["hyperlapse_speed"],
+            "output.hyperlapse_speed",
+            0.1,
+            50.0
+        )
     except Exception as e:
         errors.append(str(e))
-
-    if config["output"]["hyperlapse_speed"] < 1:
-        errors.append("output.hyperlapse_speed debe ser >= 1.0.")
 
     if not isinstance(config["output"].get("resume"), bool):
         errors.append("output.resume debe ser true|false.")
