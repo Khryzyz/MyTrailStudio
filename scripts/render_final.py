@@ -14,6 +14,53 @@ def artifact_exists(path):
     return os.path.exists(path) and os.path.getsize(path) > 0
 
 
+def value_token(value):
+    return str(value).replace(".", "p").replace("-", "m")
+
+
+def render_profile_name(config):
+    input_mode = config["input"]["video_mode"]
+    input_speed = config["input"]["hyperlapse_speed"] if input_mode == "hyperlapse" else 1.0
+    output = config["output"]
+    transition = output.get("transition", {})
+
+    parts = [
+        "in",
+        input_mode,
+        value_token(input_speed),
+        "out",
+        value_token(output["hyperlapse_speed"]),
+        output["resolution"],
+        f"{output['fps']}fps",
+        "audiooff" if output["remove_audio"] else "audioon",
+        f"overlay{config['setting']['layout']['overlay_fps']}fps",
+    ]
+
+    if transition.get("add") and transition.get("type") == "fade_black":
+        parts.extend(["fadeblack", value_token(transition.get("time", 0.5))])
+    else:
+        parts.append("nofade")
+
+    return safe_name("_".join(str(p) for p in parts))
+
+
+def final_artifact_matches_profile(final_path, final_dir, profile_name):
+    report_path = os.path.join(final_dir, "render_report.json")
+    if not artifact_exists(final_path) or not artifact_exists(report_path):
+        return False
+
+    try:
+        with open(report_path, "r", encoding="utf-8") as f:
+            report = json.load(f)
+    except Exception:
+        return False
+
+    return (
+        report.get("final_output") == final_path
+        and report.get("render_profile") == profile_name
+    )
+
+
 def print_render_summary(manifest):
     config = manifest["config"]
     videos = manifest["videos"]
@@ -40,7 +87,7 @@ def print_render_summary(manifest):
     print("")
 
 
-def write_render_report(manifest, manifest_path, final_path):
+def write_render_report(manifest, manifest_path, final_path, render_profile):
     config = manifest["config"]
     videos = manifest["videos"]
     output_dir = manifest["resolved_paths"]["output_dir"]
@@ -53,6 +100,7 @@ def write_render_report(manifest, manifest_path, final_path):
     report = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "final_output": final_path,
+        "render_profile": render_profile,
         "manifest_path": manifest_path,
         "videos": [
             {
@@ -168,7 +216,8 @@ def main():
     output_dir = manifest["resolved_paths"]["output_dir"]
     final_dir = os.path.join(output_dir, "final")
     frames_base = os.path.join(output_dir, "frames")
-    temp_dir = os.path.join(root, "temp")
+    profile_name = render_profile_name(config)
+    temp_dir = os.path.join(root, "temp", profile_name)
 
     os.makedirs(final_dir, exist_ok=True)
     os.makedirs(frames_base, exist_ok=True)
@@ -187,7 +236,7 @@ def main():
 
     for idx, video in enumerate(videos, start=1):
         video_base = safe_name(os.path.splitext(video["name"])[0])
-        frames_dir = os.path.join(frames_base, f"final_{video_base}")
+        frames_dir = os.path.join(frames_base, profile_name, f"final_{video_base}")
         clip_path = os.path.join(temp_dir, f"clip_{idx:03d}_{video_base}.mp4")
 
         if resume and artifact_exists(clip_path):
@@ -231,7 +280,7 @@ def main():
 
     if config["output"]["single_final_video"]:
         final_path = os.path.join(final_dir, f"{out_name}_overlay_hyperlapse_{speed_txt}x_{resolution}.mp4")
-        if resume and artifact_exists(final_path):
+        if resume and final_artifact_matches_profile(final_path, final_dir, profile_name):
             print("")
             print("Video final existente reutilizado:")
             print(final_path)
@@ -253,7 +302,7 @@ def main():
     print("Render final completado:")
     print(final_path)
 
-    write_render_report(manifest, manifest_path, final_path)
+    write_render_report(manifest, manifest_path, final_path, profile_name)
 
     if config["output"].get("cleanup_after_render", True):
         cleanup_auto_after_render(root)
