@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -7,7 +8,7 @@ from datetime import timedelta, timezone
 from ffmpeg_renderer import ffmpeg_threads
 from frame_renderer import render_frames_parallel
 from gpx_track import enrich_points, read_gpx_points
-from pipeline_utils import parse_dt
+from pipeline_utils import ffmpeg_output_speed_factor, parse_dt
 
 def main():
     import argparse
@@ -39,10 +40,9 @@ def main():
     closing_seconds = min(closing_seconds, preview_time)
 
     animated_seconds = preview_time - closing_seconds
-    total_frames = preview_time * overlay_fps
-    animated_frames = animated_seconds * overlay_fps
 
     input_speed = float(config["input"]["hyperlapse_speed"]) if config["input"]["video_mode"] == "hyperlapse" else 1.0
+    output_speed_factor = ffmpeg_output_speed_factor(config)
 
     video = manifest["videos"][0]
     video_path = video["path"]
@@ -77,10 +77,18 @@ def main():
     }
 
     video_start = parse_dt(video["start_utc"])
+    source_seconds = min(float(video["duration_seconds"]), animated_seconds * output_speed_factor)
+    if output_speed_factor > 0:
+        animated_seconds = source_seconds / output_speed_factor
+    animated_frames = math.ceil(animated_seconds * overlay_fps)
+    closing_frames = closing_seconds * overlay_fps
+    total_frames = animated_frames + closing_frames
 
     print("")
     print("Generando preview...")
     print("Frames:", total_frames)
+    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
+    print("Factor tecnico FFmpeg:", round(output_speed_factor, 6), "x")
     print("Carpeta:", frames_dir)
     print("Salida:", preview_out)
     print("")
@@ -90,7 +98,8 @@ def main():
         out = os.path.join(frames_dir, f"frame_{frame:05d}.png")
 
         if frame < animated_frames:
-            video_sec = frame / overlay_fps
+            output_sec = frame / overlay_fps
+            video_sec = output_sec * output_speed_factor
             real_sec = video_sec * input_speed
             current_time = video_start + timedelta(seconds=real_sec)
             frame_tasks.append((frame, "overlay", current_time, out))
@@ -109,11 +118,11 @@ def main():
 
     ffmpeg_cmd = [
         "ffmpeg", "-y",
-        "-t", str(animated_seconds),
+        "-t", str(source_seconds),
         "-i", video_path,
         "-framerate", str(overlay_fps),
         "-i", os.path.join(frames_dir, "frame_%05d.png"),
-        "-filter_complex", f"[0:v][1:v]overlay=0:0:shortest=0,scale={target_scale},fps={config['output']['fps']}",
+        "-filter_complex", f"[0:v]setpts=PTS/{output_speed_factor}[base];[base][1:v]overlay=0:0:shortest=0,scale={target_scale},fps={config['output']['fps']}",
         "-an",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
