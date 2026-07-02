@@ -14,6 +14,13 @@
     "hyperlapse_speed": 3.5,
     "remove_audio": true,
     "single_final_video": true,
+    "resume": true,
+    "cleanup_after_render": true,
+    "transition": {
+      "add": true,
+      "type": "fade_black",
+      "time": 0.5
+    },
     "preview": {
       "add": false,
       "time": 10
@@ -25,6 +32,10 @@
     }
   },
   "setting": {
+    "performance": {
+      "frame_workers": 0,
+      "ffmpeg_threads": 0
+    },
     "layout": {
       "theme": "sport",
       "font_path": "resources/font/font.otf",

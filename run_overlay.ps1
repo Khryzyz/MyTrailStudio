@@ -6,6 +6,7 @@ $ScriptsDir = Join-Path $Root "scripts"
 $ResourcesDir = Join-Path $Root "resources"
 $TempDir = Join-Path $Root "temp"
 $ConfigPath = Join-Path $InputDir "config.json"
+$CleanupMode = $args -contains "--cleanup"
 
 Write-Host ""
 Write-Host "====================================="
@@ -17,23 +18,60 @@ Write-Host "Ruta del proyecto: $Root"
 Write-Host "Config: $ConfigPath"
 Write-Host ""
 
+if ($CleanupMode) {
+    $cleanupScript = Join-Path $ScriptsDir "pipeline_cleanup.py"
+
+    if (!(Test-Path $cleanupScript)) {
+        Write-Host "FALTA script de limpieza: $cleanupScript" -ForegroundColor Red
+        exit 1
+    }
+
+    try {
+        $pythonVersion = python --version 2>&1
+        Write-Host "Python OK: $pythonVersion" -ForegroundColor Green
+    } catch {
+        Write-Host "Python no encontrado" -ForegroundColor Red
+        exit 1
+    }
+
+    python $cleanupScript --root $Root --mode manual
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "La limpieza fallo." -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    Write-Host "Limpieza completada correctamente." -ForegroundColor Green
+    exit 0
+}
+
 $requiredFolders = @(
     $InputDir,
-    $OutputDir,
-    "$OutputDir\frames",
-    "$OutputDir\previews",
-    "$OutputDir\final",
-    "$OutputDir\data",
     $ScriptsDir,
     $ResourcesDir,
-    "$ResourcesDir\font",
-    $TempDir
+    "$ResourcesDir\font"
 )
 
 foreach ($folder in $requiredFolders) {
     if (!(Test-Path $folder)) {
         Write-Host "FALTA carpeta: $folder" -ForegroundColor Red
         exit 1
+    }
+}
+
+$generatedFolders = @(
+    $OutputDir,
+    "$OutputDir\frames",
+    "$OutputDir\previews",
+    "$OutputDir\final",
+    "$OutputDir\data",
+    $TempDir
+)
+
+foreach ($folder in $generatedFolders) {
+    if (!(Test-Path $folder)) {
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        Write-Host "Carpeta creada: $folder"
     }
 }
 
@@ -77,13 +115,18 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Validacion completada correctamente." -ForegroundColor Green
 
-$manifestPath = Join-Path $OutputDir "data\manifest.json"
+$manifestPath = python -c "import os, sys; root=sys.argv[1]; sys.path.insert(0, os.path.join(root, 'scripts')); from config_io import load_config, parse_overrides; from utils import resolve_path; config=load_config(os.path.join(root, 'input', 'config.json')); config=parse_overrides(sys.argv[2:], config); print(os.path.join(resolve_path(root, config['output']['dir']), 'data', 'manifest.json'))" $Root @args
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "No se pudo resolver la ruta del manifest." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 
 if ($manifest.config.output.preview.add -eq $true) {
     Write-Host "Modo preview activado."
     $previewScript = Join-Path $ScriptsDir "pipeline_preview.py"
-    python $previewScript --root $Root
+    python $previewScript --root $Root --manifest $manifestPath
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "La generacion del preview fallo." -ForegroundColor Red
@@ -92,7 +135,7 @@ if ($manifest.config.output.preview.add -eq $true) {
 } else {
     Write-Host "Modo render final activado."
     $renderScript = Join-Path $ScriptsDir "pipeline_render.py"
-    python $renderScript --root $Root
+    python $renderScript --root $Root --manifest $manifestPath
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "La generacion del render final fallo." -ForegroundColor Red

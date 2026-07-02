@@ -4,19 +4,21 @@ import shutil
 import subprocess
 from datetime import timedelta, timezone
 
-from gpx_io import enrich_points, read_gpx_points, sample_at
-from overlay_renderer import build_overlay_context, render_closing_frame, render_overlay_frame
-from utils import load_font, parse_dt
+from ffmpeg_render import ffmpeg_threads
+from frame_render import render_frames_parallel
+from gpx_io import enrich_points, read_gpx_points
+from utils import parse_dt
 
 def main():
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
+    parser.add_argument("--manifest")
     args = parser.parse_args()
 
     root = args.root
-    manifest_path = os.path.join(root, "output", "data", "manifest.json")
+    manifest_path = args.manifest or os.path.join(root, "output", "data", "manifest.json")
 
     with open(manifest_path, "r", encoding="utf-8") as f:
         manifest = json.load(f)
@@ -54,13 +56,15 @@ def main():
 
     route_name = config["input"]["route_name"] or os.path.splitext(manifest["gpx"]["name"])[0]
 
-    font_path = os.path.join(root, config["setting"]["layout"]["font_path"])
-    frames_dir = os.path.join(root, "output", "frames", f"preview_{video_name}")
-    preview_out = os.path.join(root, "output", "previews", f"{video_name}_preview.mp4")
+    output_dir = manifest["resolved_paths"]["output_dir"]
+    font_path = manifest["resolved_paths"]["font_path"]
+    frames_dir = os.path.join(output_dir, "frames", f"preview_{video_name}")
+    preview_out = os.path.join(output_dir, "previews", f"{video_name}_preview.mp4")
 
     if os.path.exists(frames_dir):
         shutil.rmtree(frames_dir)
     os.makedirs(frames_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(preview_out), exist_ok=True)
 
     max_alt = max(p["ele"] for p in gpx_points)
     max_dist = max(p["dist_m"] for p in gpx_points)
@@ -72,7 +76,6 @@ def main():
         "date_text": parse_dt(manifest["gpx"]["start_utc"]).astimezone(timezone(timedelta(hours=-5))).strftime("%d/%m/%Y")
     }
 
-    overlay_context = build_overlay_context(W, H, gpx_points, font_path)
     video_start = parse_dt(video["start_utc"])
 
     print("")
@@ -82,24 +85,19 @@ def main():
     print("Salida:", preview_out)
     print("")
 
+    frame_tasks = []
     for frame in range(total_frames):
+        out = os.path.join(frames_dir, f"frame_{frame:05d}.png")
+
         if frame < animated_frames:
             video_sec = frame / overlay_fps
             real_sec = video_sec * input_speed
             current_time = video_start + timedelta(seconds=real_sec)
-            current = sample_at(gpx_points, current_time)
-            img = render_overlay_frame(W, H, config, gpx_points, current_time, current, frame, overlay_context)
+            frame_tasks.append((frame, "overlay", current_time, out))
         else:
-            img = render_closing_frame(W, H, config, route_name, stats, font_path)
+            frame_tasks.append((frame, "closing", None, out))
 
-        out = os.path.join(frames_dir, f"frame_{frame:05d}.png")
-        img.save(out)
-
-        if frame % overlay_fps == 0 or frame == total_frames - 1:
-            pct = ((frame + 1) / total_frames) * 100
-            print(f"\rFrames preview: {frame + 1}/{total_frames} ({pct:.1f}%)", end="")
-
-    print("")
+    render_frames_parallel(W, H, config, gpx_points, font_path, frame_tasks, "Frames preview", route_name, stats)
     print("Frames preview creados.")
 
     target_resolution = config["output"]["resolution"]
@@ -121,6 +119,7 @@ def main():
         "-pix_fmt", "yuv420p",
         "-crf", "20",
         "-preset", "medium",
+        "-threads", str(ffmpeg_threads(config)),
         preview_out
     ]
 

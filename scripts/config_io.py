@@ -20,6 +20,13 @@ DEFAULT_CONFIG = {
         "hyperlapse_speed": 1.0,
         "remove_audio": False,
         "single_final_video": False,
+        "resume": True,
+        "cleanup_after_render": True,
+        "transition": {
+            "add": True,
+            "type": "fade_black",
+            "time": 0.5
+        },
         "preview": {
             "add": False,
             "time": 10
@@ -31,6 +38,10 @@ DEFAULT_CONFIG = {
         }
     },
     "setting": {
+        "performance": {
+            "frame_workers": 0,
+            "ffmpeg_threads": 0
+        },
         "layout": {
             "theme": "sport",
             "font_path": "resources/font/font.otf",
@@ -56,6 +67,12 @@ PARAM_MAP = {
     "output.hyperlapsespeed": ("output", "hyperlapse_speed"),
     "output.removeaudio": ("output", "remove_audio"),
     "output.singlefinalvideo": ("output", "single_final_video"),
+    "output.resume": ("output", "resume"),
+    "output.cleanupafterrender": ("output", "cleanup_after_render"),
+    "output.cleanup_after_render": ("output", "cleanup_after_render"),
+    "output.transition.add": ("output", "transition", "add"),
+    "output.transition.type": ("output", "transition", "type"),
+    "output.transition.time": ("output", "transition", "time"),
 
     "output.preview.add": ("output", "preview", "add"),
     "output.preview.time": ("output", "preview", "time"),
@@ -63,6 +80,10 @@ PARAM_MAP = {
     "output.closingscreen.add": ("output", "closing_screen", "add"),
     "output.closingscreen.message": ("output", "closing_screen", "message"),
     "output.closingscreen.time": ("output", "closing_screen", "time"),
+
+    "setting.performance.frame_workers": ("setting", "performance", "frame_workers"),
+    "setting.performance.ffmpegthreads": ("setting", "performance", "ffmpeg_threads"),
+    "setting.performance.ffmpeg_threads": ("setting", "performance", "ffmpeg_threads"),
 
     "setting.layout.theme": ("setting", "layout", "theme"),
     "setting.layout.fontpath": ("setting", "layout", "font_path"),

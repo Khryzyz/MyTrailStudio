@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from config_io import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
 from gpx_io import read_gpx
 from utils import fmt, resolve_path
-from video_metadata import analyze_video, ffprobe_video
+from video_metadata import analyze_video, ffprobe_video, list_video_files, sort_videos_by_start
 
 def validate_config(config, root):
     errors = []
@@ -52,6 +52,27 @@ def validate_config(config, root):
     if config["output"]["hyperlapse_speed"] < 1:
         errors.append("output.hyperlapse_speed debe ser >= 1.0.")
 
+    if not isinstance(config["output"].get("resume"), bool):
+        errors.append("output.resume debe ser true|false.")
+
+    if not isinstance(config["output"].get("cleanup_after_render"), bool):
+        errors.append("output.cleanup_after_render debe ser true|false.")
+
+    transition = config["output"].get("transition", {})
+    if not isinstance(transition.get("add"), bool):
+        errors.append("output.transition.add debe ser true|false.")
+
+    if transition.get("type") not in ["fade_black"]:
+        errors.append("output.transition.type debe ser fade_black.")
+
+    try:
+        transition["time"] = parse_float_1(transition.get("time"), "output.transition.time")
+    except Exception as e:
+        errors.append(str(e))
+
+    if isinstance(transition.get("time"), (int, float)) and transition["time"] <= 0:
+        errors.append("output.transition.time debe ser mayor que 0.")
+
     preview_time = config["output"]["preview"]["time"]
     if not isinstance(preview_time, int) or preview_time < 1 or preview_time > 60:
         errors.append("output.preview.time debe ser entero entre 1 y 60.")
@@ -69,6 +90,16 @@ def validate_config(config, root):
     overlay_fps = config["setting"]["layout"]["overlay_fps"]
     if not isinstance(overlay_fps, int) or overlay_fps < 1 or overlay_fps > 60:
         errors.append("setting.layout.overlay_fps debe ser entero entre 1 y 60.")
+
+    performance = config["setting"].get("performance", {})
+    frame_workers = performance.get("frame_workers")
+    ffmpeg_threads = performance.get("ffmpeg_threads")
+
+    if not isinstance(frame_workers, int) or frame_workers < 0 or frame_workers > 64:
+        errors.append("setting.performance.frame_workers debe ser entero entre 0 y 64. Usa 0 para automatico.")
+
+    if not isinstance(ffmpeg_threads, int) or ffmpeg_threads < 0 or ffmpeg_threads > 64:
+        errors.append("setting.performance.ffmpeg_threads debe ser entero entre 0 y 64. Usa 0 para automatico.")
 
     videos_dir = resolve_path(root, config["input"]["videos_dir"])
     gpx_dir = resolve_path(root, config["input"]["gpx_dir"])
@@ -124,8 +155,11 @@ def main():
     print("Resolution:", config["output"]["resolution"])
     print("FPS:", config["output"]["fps"])
     print("Remove audio:", config["output"]["remove_audio"])
+    print("Resume:", config["output"]["resume"])
     print("Preview:", config["output"]["preview"]["add"], "-", config["output"]["preview"]["time"], "s")
     print("Closing screen:", config["output"]["closing_screen"]["add"], "-", config["output"]["closing_screen"]["time"], "s")
+    print("Frame workers:", config["setting"]["performance"]["frame_workers"])
+    print("FFmpeg threads:", config["setting"]["performance"]["ffmpeg_threads"])
     print("Theme:", config["setting"]["layout"]["theme"])
 
     if warnings:
@@ -134,11 +168,7 @@ def main():
         for w in warnings:
             print(" -", w)
 
-    videos = sorted([
-        os.path.join(paths["videos_dir"], f)
-        for f in os.listdir(paths["videos_dir"])
-        if f.lower().endswith(".mp4")
-    ])
+    videos = list_video_files(paths["videos_dir"])
 
     gpx_files = sorted([
         os.path.join(paths["gpx_dir"], f)
@@ -147,10 +177,14 @@ def main():
     ])
 
     if not videos:
-        raise Exception("No hay videos MP4 en input.videos_dir.")
+        raise Exception("No hay videos MP4/MOV en input.videos_dir.")
 
     if not gpx_files:
         raise Exception("No hay GPX en input.gpx_dir.")
+
+    if len(gpx_files) > 1:
+        names = ", ".join(os.path.basename(p) for p in gpx_files)
+        raise Exception(f"Hay mas de un GPX en input.gpx_dir. Deja solo uno por ejecucion. GPX encontrados: {names}")
 
     gpx_path = gpx_files[0]
     gpx = read_gpx(gpx_path)
@@ -167,14 +201,16 @@ def main():
 
     video_results = []
     target_w, target_h = RESOLUTION_MAP[config["output"]["resolution"]]
+    probed_videos = sort_videos_by_start([ffprobe_video(video_path, tz) for video_path in videos])
 
-    for video_path in videos:
-        video = ffprobe_video(video_path)
-        analysis = analyze_video(video, gpx, config["input"]["hyperlapse_speed"])
+    for video in probed_videos:
+        analysis = analyze_video(video, gpx, config["input"]["video_mode"], config["input"]["hyperlapse_speed"])
 
         print("Video:", video["name"])
         print("  Resolucion:", f'{video["width"]}x{video["height"]}')
+        print("  FPS original:", video["fps_raw"] or "SIN FPS")
         print("  Inicio:", fmt(video["start"], tz))
+        print("  Fuente inicio:", video["start_source"])
         print("  Fin archivo:", fmt(video["end"], tz))
         print("  Fin real segun modo:", fmt(analysis["real_end"], tz))
         print("  Duracion archivo:", str(timedelta(seconds=round(video["duration_seconds"]))))
@@ -199,15 +235,23 @@ def main():
             "path": video["path"],
             "width": video["width"],
             "height": video["height"],
+            "fps": video["fps"],
+            "fps_raw": video["fps_raw"],
             "duration_seconds": video["duration_seconds"],
+            "duration_file_seconds": video["duration_seconds"],
             "real_duration_seconds": analysis["real_duration_seconds"],
             "start_utc": video["start"].isoformat() if video["start"] else None,
+            "real_start_utc": video["start"].isoformat() if video["start"] else None,
             "end_file_utc": video["end"].isoformat() if video["end"] else None,
             "end_real_utc": analysis["real_end"].isoformat() if analysis["real_end"] else None,
+            "real_end_utc": analysis["real_end"].isoformat() if analysis["real_end"] else None,
             "start_local": fmt(video["start"], tz),
+            "real_start_local": fmt(video["start"], tz),
             "end_file_local": fmt(video["end"], tz),
             "end_real_local": fmt(analysis["real_end"], tz),
+            "real_end_local": fmt(analysis["real_end"], tz),
             "creation_time_raw": video["creation_time_raw"],
+            "start_source": video["start_source"],
             "gps_status": analysis["status"],
             "overlap_seconds": analysis["overlap_seconds"],
             "missing_before_seconds": analysis["missing_before_seconds"],

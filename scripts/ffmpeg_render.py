@@ -13,7 +13,21 @@ RESOLUTION_SCALE = {
 }
 
 
-def render_video_clip(manifest, video, frames_dir, out_path):
+def ffmpeg_threads(config):
+    threads = int(config["setting"]["performance"].get("ffmpeg_threads", 0))
+    return max(0, threads)
+
+
+def render_video_clip(
+    manifest,
+    video,
+    frames_dir,
+    out_path,
+    transition_enabled=False,
+    transition_time=0.5,
+    is_first_clip=True,
+    is_last_clip=True
+):
     config = manifest["config"]
 
     overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
@@ -21,6 +35,7 @@ def render_video_clip(manifest, video, frames_dir, out_path):
     output_speed = float(config["output"]["hyperlapse_speed"])
     resolution = config["output"]["resolution"]
     remove_audio = bool(config["output"]["remove_audio"])
+    threads = ffmpeg_threads(config)
 
     scale = RESOLUTION_SCALE[resolution]
 
@@ -28,7 +43,25 @@ def render_video_clip(manifest, video, frames_dir, out_path):
         print("ADVERTENCIA: remove_audio=false con hyperlapse_speed distinto de 1 no se soporta aun. Se exportara sin audio.")
         remove_audio = True
 
-    filter_complex = f"[0:v][1:v]overlay=0:0:shortest=1,setpts=PTS/{output_speed},scale={scale},fps={output_fps}[v]"
+    filters = [
+        "overlay=0:0:shortest=1",
+        f"setpts=PTS/{output_speed}",
+        f"scale={scale}",
+        f"fps={output_fps}"
+    ]
+
+    if transition_enabled:
+        output_duration = float(video["duration_seconds"]) / output_speed
+        fade_time = min(float(transition_time), output_duration)
+
+        if not is_first_clip:
+            filters.append(f"fade=t=in:st=0:d={fade_time}")
+
+        if not is_last_clip:
+            fade_out_start = max(0, output_duration - fade_time)
+            filters.append(f"fade=t=out:st={fade_out_start}:d={fade_time}")
+
+    filter_complex = f"[0:v][1:v]{','.join(filters)}[v]"
 
     cmd = [
         "ffmpeg", "-y",
@@ -50,6 +83,7 @@ def render_video_clip(manifest, video, frames_dir, out_path):
         "-pix_fmt", "yuv420p",
         "-crf", "20",
         "-preset", "medium",
+        "-threads", str(threads),
         out_path
     ]
 
@@ -94,6 +128,7 @@ def create_closing_clip(root, manifest, gpx_points, out_path):
     seconds = int(config["output"]["closing_screen"]["time"])
     fps = int(config["output"]["fps"])
     scale = RESOLUTION_SCALE[config["output"]["resolution"]]
+    threads = ffmpeg_threads(config)
 
     cmd = [
         "ffmpeg", "-y",
@@ -106,6 +141,7 @@ def create_closing_clip(root, manifest, gpx_points, out_path):
         "-pix_fmt", "yuv420p",
         "-crf", "20",
         "-preset", "medium",
+        "-threads", str(threads),
         out_path
     ]
 

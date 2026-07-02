@@ -1,17 +1,80 @@
 import json
 import os
+import re
 import subprocess
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from utils import parse_dt
 
 
-def ffprobe_video(video_path):
+VIDEO_EXTENSIONS = (".mp4", ".mov")
+
+
+def is_supported_video(path):
+    return os.path.splitext(path)[1].lower() in VIDEO_EXTENSIONS
+
+
+def list_video_files(videos_dir):
+    return sorted([
+        os.path.join(videos_dir, f)
+        for f in os.listdir(videos_dir)
+        if is_supported_video(f)
+    ])
+
+
+def parse_rate(value):
+    if not value or value == "0/0":
+        return None
+
+    try:
+        if "/" in value:
+            num, den = value.split("/", 1)
+            den_value = float(den)
+            if den_value == 0:
+                return None
+            return float(num) / den_value
+        return float(value)
+    except Exception:
+        return None
+
+
+def parse_filename_start(name):
+    match = re.search(r"(?<!\d)(\d{8})[_-](\d{6})(?!\d)", name)
+    if not match:
+        return None
+
+    try:
+        local_dt = datetime.strptime("".join(match.groups()), "%Y%m%d%H%M%S")
+    except ValueError:
+        return None
+
+    return local_dt.replace(tzinfo=timezone.utc)
+
+
+def sort_videos_by_start(videos):
+    missing = [v["name"] for v in videos if not v["start"]]
+    if missing:
+        names = ", ".join(missing)
+        raise Exception(f"Falta hora de inicio para: {names}. No hay creation_time ni fecha reconocible en el nombre.")
+
+    invalid = [
+        f'{v["name"]} (creation_time={v["creation_time_raw"]})'
+        for v in videos
+        if v["creation_time_raw"] and v["start_source"] == "unknown"
+    ]
+    if invalid:
+        names = ", ".join(invalid)
+        raise Exception(f"No se pudo parsear creation_time con ffprobe para: {names}. No se usara fecha de modificacion.")
+
+    return sorted(videos, key=lambda v: (v["start"], v["name"].lower()))
+
+
+def ffprobe_video(video_path, fallback_tz=None):
     cmd = [
         "ffprobe",
         "-v", "error",
         "-show_entries",
-        "format=duration:format_tags=creation_time:stream=width,height:stream_tags=creation_time",
+        "format=duration:format_tags=creation_time:stream=codec_type,width,height,r_frame_rate,avg_frame_rate:stream_tags=creation_time",
         "-of", "json",
         video_path
     ]
@@ -27,11 +90,15 @@ def ffprobe_video(video_path):
 
     width = None
     height = None
+    fps = None
+    fps_raw = None
 
     for stream in data.get("streams", []):
-        if stream.get("width") and stream.get("height") and width is None:
+        if stream.get("codec_type") == "video" and stream.get("width") and stream.get("height") and width is None:
             width = int(stream.get("width"))
             height = int(stream.get("height"))
+            fps_raw = stream.get("avg_frame_rate") or stream.get("r_frame_rate")
+            fps = parse_rate(fps_raw)
 
         if not creation_time:
             tags = stream.get("tags", {})
@@ -39,21 +106,31 @@ def ffprobe_video(video_path):
                 creation_time = tags.get("creation_time")
 
     start = parse_dt(creation_time)
+    start_source = "ffprobe" if start else "unknown"
+
+    if not start and fallback_tz:
+        start = parse_filename_start(os.path.basename(video_path))
+        if start:
+            start_source = "filename_utc"
+
     end = start + timedelta(seconds=duration) if start else None
 
     return {
-        "path": video_path,
+        "path": os.path.abspath(video_path),
         "name": os.path.basename(video_path),
         "duration_seconds": duration,
         "start": start,
         "end": end,
         "creation_time_raw": creation_time,
         "width": width,
-        "height": height
+        "height": height,
+        "fps": fps,
+        "fps_raw": fps_raw,
+        "start_source": start_source
     }
 
 
-def analyze_video(video, gpx, input_hyperlapse_speed):
+def analyze_video(video, gpx, input_video_mode, input_hyperlapse_speed):
     if not video["start"]:
         return {
             "status": "SIN_HORA_VIDEO",
@@ -64,7 +141,10 @@ def analyze_video(video, gpx, input_hyperlapse_speed):
             "missing_after_seconds": None
         }
 
-    real_duration = video["duration_seconds"] * input_hyperlapse_speed
+    if input_video_mode == "hyperlapse":
+        real_duration = video["duration_seconds"] * input_hyperlapse_speed
+    else:
+        real_duration = video["duration_seconds"]
 
     v_start = video["start"]
     v_end = v_start + timedelta(seconds=real_duration)
