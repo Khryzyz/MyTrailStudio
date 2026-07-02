@@ -50,7 +50,8 @@ DEFAULT_CONFIG = {
             "show_gps_unavailable": True,
             "keep_temp_frames": True
         }
-    }
+    },
+    "video_overrides": {}
 }
 
 PARAM_MAP = {

@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from gpx_track import read_gpx
 from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
 from pipeline_utils import fmt, resolve_path, safe_name
-from video_metadata import analyze_video, ffprobe_video, list_video_files, sort_videos_by_start
+from video_metadata import analyze_video, apply_creation_time_override, ffprobe_video, list_video_files, sort_videos_by_start
 
 def validate_config(config, root):
     errors = []
@@ -101,6 +101,16 @@ def validate_config(config, root):
 
     if not isinstance(ffmpeg_threads, int) or ffmpeg_threads < 0 or ffmpeg_threads > 64:
         errors.append("setting.performance.ffmpeg_threads debe ser entero entre 0 y 64. Usa 0 para automatico.")
+
+    video_overrides = config.get("video_overrides", {})
+    if not isinstance(video_overrides, dict):
+        errors.append("video_overrides debe ser un objeto JSON.")
+    else:
+        for name, override in video_overrides.items():
+            if not isinstance(override, dict):
+                errors.append(f"video_overrides.{name} debe ser un objeto JSON.")
+            elif "creation_time" in override and not isinstance(override["creation_time"], str):
+                errors.append(f"video_overrides.{name}.creation_time debe ser texto ISO, por ejemplo 2026-06-28T16:33:40Z.")
 
     videos_dir = resolve_path(root, config["input"]["videos_dir"])
     gpx_dir = resolve_path(root, config["input"]["gpx_dir"])
@@ -249,7 +259,20 @@ def main():
 
     video_results = []
     target_w, target_h = RESOLUTION_MAP[config["output"]["resolution"]]
-    probed_videos = sort_videos_by_start([ffprobe_video(video_path) for video_path in videos])
+    video_overrides = {
+        name.lower(): value
+        for name, value in config.get("video_overrides", {}).items()
+    }
+
+    probed = []
+    for video_path in videos:
+        video = ffprobe_video(video_path)
+        override = video_overrides.get(video["name"].lower(), {}).get("creation_time")
+        if override:
+            video = apply_creation_time_override(video, override)
+        probed.append(video)
+
+    probed_videos = sort_videos_by_start(probed)
 
     for video in probed_videos:
         analysis = analyze_video(video, gpx, config["input"]["video_mode"], config["input"]["hyperlapse_speed"])
@@ -299,6 +322,7 @@ def main():
             "end_real_local": fmt(analysis["real_end"], tz),
             "real_end_local": fmt(analysis["real_end"], tz),
             "creation_time_raw": video["creation_time_raw"],
+            "creation_time_used": video["creation_time_used"],
             "start_source": video["start_source"],
             "gps_status": analysis["status"],
             "overlap_seconds": analysis["overlap_seconds"],

@@ -52,10 +52,10 @@ def parse_rate(value):
 
 
 def sort_videos_by_start(videos):
-    missing = [v["name"] for v in videos if not v["creation_time_raw"]]
+    missing = [v["name"] for v in videos if not v["start"]]
     if missing:
         names = ", ".join(missing)
-        raise Exception(f"Falta creation_time en metadata ffprobe para: {names}. No se puede ordenar sin esa hora.")
+        raise Exception(f"Falta creation_time valido para: {names}. Agrega metadata ffprobe valida o video_overrides en la configuracion.")
 
     invalid = [
         f'{v["name"]} (creation_time={v["creation_time_raw"]})'
@@ -107,6 +107,7 @@ def ffprobe_video(video_path):
 
     start = parse_dt(creation_time)
     start_source = "ffprobe" if start else "unknown"
+    creation_time_used = creation_time
 
     end = start + timedelta(seconds=duration) if start else None
 
@@ -117,12 +118,29 @@ def ffprobe_video(video_path):
         "start": start,
         "end": end,
         "creation_time_raw": creation_time,
+        "creation_time_used": creation_time_used,
         "width": width,
         "height": height,
         "fps": fps,
         "fps_raw": fps_raw,
         "start_source": start_source
     }
+
+
+def apply_creation_time_override(video, override_creation_time):
+    if video["start"]:
+        return video
+
+    override_start = parse_dt(override_creation_time)
+    if not override_start:
+        raise Exception(f"Override creation_time invalido para {video['name']}: {override_creation_time}")
+
+    video = dict(video)
+    video["start"] = override_start
+    video["end"] = override_start + timedelta(seconds=video["duration_seconds"])
+    video["creation_time_used"] = override_creation_time
+    video["start_source"] = "override"
+    return video
 
 
 def analyze_video(video, gpx, input_video_mode, input_hyperlapse_speed):
