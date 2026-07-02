@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 import sys
 from datetime import timedelta, timezone
@@ -7,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from gpx_track import read_gpx
 from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
-from pipeline_utils import fmt, resolve_path
+from pipeline_utils import fmt, resolve_path, safe_name
 from video_metadata import analyze_video, ffprobe_video, list_video_files, sort_videos_by_start
 
 def validate_config(config, root):
@@ -125,9 +126,56 @@ def validate_config(config, root):
         "font_path": font_path
     }
 
+def final_output_path(manifest):
+    config = manifest["config"]
+    output_dir = manifest["resolved_paths"]["output_dir"]
+    final_dir = os.path.join(output_dir, "final")
+    route_name = config["input"]["route_name"] or os.path.splitext(manifest["gpx"]["name"])[0]
+    out_name = safe_name(route_name)
+    speed_txt = str(config["output"]["hyperlapse_speed"]).replace(".", "p")
+    resolution = config["output"]["resolution"]
+
+    if config["output"]["single_final_video"]:
+        return os.path.join(final_dir, f"{out_name}_overlay_hyperlapse_{speed_txt}x_{resolution}.mp4")
+    return final_dir
+
+
+def print_validate_only_summary(manifest):
+    config = manifest["config"]
+    videos = manifest["videos"]
+    overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
+    output_speed = float(config["output"]["hyperlapse_speed"])
+    closing_add = bool(config["output"]["closing_screen"]["add"])
+    closing_seconds = int(config["output"]["closing_screen"]["time"]) if closing_add else 0
+
+    input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
+    input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
+    estimated_final_seconds = (input_file_seconds / output_speed) + closing_seconds
+    estimated_frames = sum(math.ceil(float(v["duration_file_seconds"]) * overlay_fps) for v in videos)
+
+    print("")
+    print("===== VALIDATE ONLY / DRY RUN =====")
+    print("Videos detectados:", len(videos))
+    for idx, video in enumerate(videos, start=1):
+        print(f"  {idx}. {video['name']}")
+        print("     Inicio:", video["start_local"])
+        print("     Fin real:", video["real_end_local"])
+        print("     GPS:", video["gps_status"])
+    print("GPX usado:", manifest["gpx"]["name"])
+    print("Duracion total archivos:", str(timedelta(seconds=round(input_file_seconds))))
+    print("Duracion real total:", str(timedelta(seconds=round(input_real_seconds))))
+    print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Frames estimados:", estimated_frames)
+    print("Resolucion final:", config["output"]["resolution"])
+    print("FPS final:", config["output"]["fps"])
+    print("Archivo final esperado:", final_output_path(manifest))
+    print("No se generaron frames ni videos.")
+
+
 def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("--root", required=True)
+    parser.add_argument("--validate-only", action="store_true")
     known, unknown = parser.parse_known_args()
 
     root = known.root
@@ -284,6 +332,8 @@ def main():
 
     print("Manifest creado:")
     print(manifest_path)
+    if known.validate_only:
+        print_validate_only_summary(manifest)
     print("")
     print("Validacion tecnica OK.")
 

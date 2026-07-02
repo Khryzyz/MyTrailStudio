@@ -7,6 +7,7 @@ $ResourcesDir = Join-Path $Root "resources"
 $TempDir = Join-Path $Root "temp"
 $ConfigPath = Join-Path $InputDir "pipeline_config.json"
 $CleanupMode = $args -contains "--cleanup"
+$ValidateOnlyMode = $args -contains "--validate-only"
 
 Write-Host ""
 Write-Host "====================================="
@@ -114,6 +115,11 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "Validacion completada correctamente." -ForegroundColor Green
+
+if ($ValidateOnlyMode) {
+    Write-Host "Modo validate-only completado. No se genera preview ni render final." -ForegroundColor Green
+    exit 0
+}
 
 $manifestPath = python -c "import os, sys; root=sys.argv[1]; sys.path.insert(0, os.path.join(root, 'scripts')); from pipeline_config import load_config, parse_overrides; from pipeline_utils import resolve_path; config=load_config(os.path.join(root, 'input', 'pipeline_config.json')); config=parse_overrides(sys.argv[2:], config); print(os.path.join(resolve_path(root, config['output']['dir']), 'data', 'manifest.json'))" $Root @args
 if ($LASTEXITCODE -ne 0) {
