@@ -14,6 +14,32 @@ def artifact_exists(path):
     return os.path.exists(path) and os.path.getsize(path) > 0
 
 
+def print_render_summary(manifest):
+    config = manifest["config"]
+    videos = manifest["videos"]
+    overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
+    output_speed = float(config["output"]["hyperlapse_speed"])
+    closing_add = bool(config["output"]["closing_screen"]["add"])
+    closing_seconds = int(config["output"]["closing_screen"]["time"]) if closing_add else 0
+
+    input_file_seconds = sum(float(v["duration_file_seconds"]) for v in videos)
+    input_real_seconds = sum(float(v["real_duration_seconds"] or 0) for v in videos)
+    estimated_final_seconds = (input_file_seconds / output_speed) + closing_seconds
+    estimated_frames = sum(math.ceil(float(v["duration_file_seconds"]) * overlay_fps) for v in videos)
+
+    print("")
+    print("===== RESUMEN ANTES DEL RENDER FINAL =====")
+    print("Videos:", len(videos))
+    print("Duracion total real:", str(timedelta(seconds=round(input_real_seconds))))
+    print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Overlay FPS:", overlay_fps)
+    print("Frames aproximados:", estimated_frames)
+    print("Carpeta salida:", os.path.join(manifest["resolved_paths"]["output_dir"], "final"))
+    print("Pantalla final:", closing_add, "-", closing_seconds, "s")
+    print("Limpiar al terminar:", config["output"].get("cleanup_after_render", True))
+    print("")
+
+
 def render_overlay_frames(root, manifest, video, gpx_points, frames_dir):
     config = manifest["config"]
     resume = bool(config["output"].get("resume", True))
@@ -73,6 +99,8 @@ def main():
     if config["output"]["preview"]["add"]:
         print("Preview activado. No se genera render final.")
         return
+
+    print_render_summary(manifest)
 
     gpx_points = enrich_points(read_gpx_points(manifest["gpx"]["path"]))
 
