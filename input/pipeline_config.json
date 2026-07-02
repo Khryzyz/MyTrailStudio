@@ -4,7 +4,7 @@
     "gpx_dir": "input",
     "timezone": "America/Bogota",
     "video_mode": "normal",
-    "hyperlapse_speed": 1.0,
+    "hyperlapse_speed": 2.0,
     "route_name": ""
   },
   "output": {

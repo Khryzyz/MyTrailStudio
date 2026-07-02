@@ -7,7 +7,7 @@ from datetime import timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from gpx_track import read_gpx
-from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
+from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_float_range, parse_overrides
 from pipeline_utils import fmt, resolve_path, safe_name
 from video_metadata import analyze_video, apply_creation_time_override, ffprobe_video, list_video_files, sort_videos_by_start
 
@@ -32,12 +32,14 @@ def validate_config(config, root):
         errors.append("input.video_mode debe ser normal|hyperlapse.")
 
     try:
-        config["input"]["hyperlapse_speed"] = parse_float_1(config["input"]["hyperlapse_speed"], "input.hyperlapse_speed")
+        config["input"]["hyperlapse_speed"] = parse_float_range(
+            config["input"]["hyperlapse_speed"],
+            "input.hyperlapse_speed",
+            1.0,
+            50.0
+        )
     except Exception as e:
         errors.append(str(e))
-
-    if config["input"]["hyperlapse_speed"] < 1:
-        errors.append("input.hyperlapse_speed debe ser >= 1.0.")
 
     if config["output"]["resolution"] not in RESOLUTION_MAP:
         errors.append("output.resolution debe ser 1080p|2k|4k.")
@@ -310,6 +312,8 @@ def main():
             "fps_raw": video["fps_raw"],
             "duration_seconds": video["duration_seconds"],
             "duration_file_seconds": video["duration_seconds"],
+            "input_video_mode": config["input"]["video_mode"],
+            "input_hyperlapse_speed": config["input"]["hyperlapse_speed"],
             "real_duration_seconds": analysis["real_duration_seconds"],
             "start_utc": video["start"].isoformat() if video["start"] else None,
             "real_start_utc": video["start"].isoformat() if video["start"] else None,

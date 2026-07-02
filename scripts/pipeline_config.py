@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 from copy import deepcopy
@@ -10,7 +11,7 @@ DEFAULT_CONFIG = {
         "gpx_dir": "input",
         "timezone": "America/Bogota",
         "video_mode": "normal",
-        "hyperlapse_speed": 1.0,
+        "hyperlapse_speed": 2.0,
         "route_name": ""
     },
     "output": {
@@ -143,6 +144,25 @@ def parse_float_1(value, name):
     return float(text)
 
 
+def parse_float_value(value, name):
+    if value is None or isinstance(value, bool):
+        raise ValueError(f"{name} debe ser float. Valor recibido: {value}")
+    try:
+        result = float(str(value).strip())
+    except Exception:
+        raise ValueError(f"{name} debe ser float. Valor recibido: {value}")
+    if not math.isfinite(result):
+        raise ValueError(f"{name} debe ser float finito. Valor recibido: {value}")
+    return result
+
+
+def parse_float_range(value, name, min_value, max_value):
+    result = parse_float_value(value, name)
+    if result < min_value or result > max_value:
+        raise ValueError(f"{name} debe estar entre {min_value} y {max_value}. Valor recibido: {value}")
+    return result
+
+
 def parse_overrides(argv, config):
     args = list(argv)
     i = 0
@@ -171,7 +191,7 @@ def parse_overrides(argv, config):
         elif isinstance(current_value, int):
             value = int(raw_value)
         elif isinstance(current_value, float):
-            value = parse_float_1(raw_value, key)
+            value = parse_float_value(raw_value, key)
         else:
             value = raw_value
 

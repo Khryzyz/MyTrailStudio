@@ -42,7 +42,7 @@ def main():
     total_frames = preview_time * overlay_fps
     animated_frames = animated_seconds * overlay_fps
 
-    input_speed = float(config["input"]["hyperlapse_speed"])
+    input_speed = float(config["input"]["hyperlapse_speed"]) if config["input"]["video_mode"] == "hyperlapse" else 1.0
 
     video = manifest["videos"][0]
     video_path = video["path"]
