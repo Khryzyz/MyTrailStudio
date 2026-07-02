@@ -8,6 +8,12 @@ $TempDir = Join-Path $Root "temp"
 $ConfigPath = Join-Path $InputDir "pipeline_config.json"
 $CleanupMode = $args -contains "--cleanup"
 $ValidateOnlyMode = $args -contains "--validate-only"
+$ResumeMode = $args -contains "--resume"
+$PipelineArgs = @($args | Where-Object { $_ -ne "--resume" })
+
+if ($ResumeMode) {
+    $PipelineArgs += @("--output.resume", "true")
+}
 
 Write-Host ""
 Write-Host "====================================="
@@ -105,7 +111,7 @@ Write-Host ""
 
 $validator = Join-Path $ScriptsDir "validate_pipeline.py"
 
-python $validator --root $Root @args
+python $validator --root $Root @PipelineArgs
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
@@ -121,7 +127,7 @@ if ($ValidateOnlyMode) {
     exit 0
 }
 
-$manifestPath = python -c "import os, sys; root=sys.argv[1]; sys.path.insert(0, os.path.join(root, 'scripts')); from pipeline_config import load_config, parse_overrides; from pipeline_utils import resolve_path; config=load_config(os.path.join(root, 'input', 'pipeline_config.json')); config=parse_overrides(sys.argv[2:], config); print(os.path.join(resolve_path(root, config['output']['dir']), 'data', 'manifest.json'))" $Root @args
+$manifestPath = python -c "import os, sys; root=sys.argv[1]; sys.path.insert(0, os.path.join(root, 'scripts')); from pipeline_config import load_config, parse_overrides; from pipeline_utils import resolve_path; config=load_config(os.path.join(root, 'input', 'pipeline_config.json')); config=parse_overrides(sys.argv[2:], config); print(os.path.join(resolve_path(root, config['output']['dir']), 'data', 'manifest.json'))" $Root @PipelineArgs
 if ($LASTEXITCODE -ne 0) {
     Write-Host "No se pudo resolver la ruta del manifest." -ForegroundColor Red
     exit $LASTEXITCODE
