@@ -7,17 +7,31 @@ from pipeline_utils import parse_dt
 
 
 VIDEO_EXTENSIONS = (".mp4", ".mov")
+DERIVED_NAME_MARKERS = (
+    "_overlay",
+    "_preview",
+    "_final",
+    "_fixdate",
+    "_corte",
+    "_temp",
+    "_sin_fecha",
+)
 
 
 def is_supported_video(path):
     return os.path.splitext(path)[1].lower() in VIDEO_EXTENSIONS
 
 
+def is_derived_video_name(path):
+    name = os.path.basename(path).lower()
+    return any(marker in name for marker in DERIVED_NAME_MARKERS)
+
+
 def list_video_files(videos_dir):
     return sorted([
         os.path.join(videos_dir, f)
         for f in os.listdir(videos_dir)
-        if is_supported_video(f)
+        if is_supported_video(f) and not is_derived_video_name(f)
     ])
 
 
