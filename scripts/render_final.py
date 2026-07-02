@@ -4,11 +4,11 @@ import os
 import shutil
 from datetime import timedelta
 
-from ffmpeg_render import concat_videos, create_closing_clip, render_video_clip
-from frame_render import render_frames_parallel
-from gpx_io import enrich_points, read_gpx_points
-from pipeline_cleanup import cleanup_auto_after_render
-from utils import parse_dt, safe_name
+from cleanup_pipeline import cleanup_auto_after_render
+from ffmpeg_renderer import concat_videos, create_closing_clip, render_video_clip
+from frame_renderer import render_frames_parallel
+from gpx_track import enrich_points, read_gpx_points
+from pipeline_utils import parse_dt, safe_name
 
 def artifact_exists(path):
     return os.path.exists(path) and os.path.getsize(path) > 0

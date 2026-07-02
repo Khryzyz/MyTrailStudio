@@ -5,9 +5,9 @@ import sys
 from datetime import timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from config_io import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
-from gpx_io import read_gpx
-from utils import fmt, resolve_path
+from gpx_track import read_gpx
+from pipeline_config import RESOLUTION_MAP, load_config, parse_float_1, parse_overrides
+from pipeline_utils import fmt, resolve_path
 from video_metadata import analyze_video, ffprobe_video, list_video_files, sort_videos_by_start
 
 def validate_config(config, root):
@@ -131,7 +131,7 @@ def main():
     known, unknown = parser.parse_known_args()
 
     root = known.root
-    config_path = os.path.join(root, "input", "config.json")
+    config_path = os.path.join(root, "input", "pipeline_config.json")
 
     config = load_config(config_path)
     config = parse_overrides(unknown, config)

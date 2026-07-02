@@ -1,7 +1,7 @@
 import math
 import xml.etree.ElementTree as ET
 
-from utils import parse_dt
+from pipeline_utils import parse_dt
 
 
 def child_text(elem, suffix):

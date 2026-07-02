@@ -44,7 +44,7 @@ DEFAULT_CONFIG = {
         },
         "layout": {
             "theme": "sport",
-            "font_path": "resources/font/font.otf",
+            "font_path": "resources/font/overlay_font.otf",
             "overlay_fps": 10,
             "pulse_map_point": True,
             "show_gps_unavailable": True,
@@ -182,7 +182,7 @@ def parse_overrides(argv, config):
 
 def load_config(config_path):
     if not os.path.exists(config_path):
-        raise Exception("No existe input/config.json.")
+        raise Exception("No existe input/pipeline_config.json.")
 
     with open(config_path, "r", encoding="utf-8") as f:
         user_config = json.load(f)

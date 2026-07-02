@@ -4,10 +4,10 @@ import shutil
 import subprocess
 from datetime import timedelta, timezone
 
-from ffmpeg_render import ffmpeg_threads
-from frame_render import render_frames_parallel
-from gpx_io import enrich_points, read_gpx_points
-from utils import parse_dt
+from ffmpeg_renderer import ffmpeg_threads
+from frame_renderer import render_frames_parallel
+from gpx_track import enrich_points, read_gpx_points
+from pipeline_utils import parse_dt
 
 def main():
     import argparse

@@ -2,7 +2,7 @@ import math
 from datetime import timedelta, timezone
 from PIL import Image, ImageDraw
 
-from utils import load_font
+from pipeline_utils import load_font
 
 
 def text_center(draw, box_x, box_w, y, text, font, fill):

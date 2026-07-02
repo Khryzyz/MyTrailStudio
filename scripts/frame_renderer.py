@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
 
-from gpx_io import sample_at
+from gpx_track import sample_at
 from overlay_renderer import build_overlay_context, render_closing_frame, render_overlay_frame
 
 

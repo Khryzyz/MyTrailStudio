@@ -38,7 +38,7 @@
     },
     "layout": {
       "theme": "sport",
-      "font_path": "resources/font/font.otf",
+      "font_path": "resources/font/overlay_font.otf",
       "overlay_fps": 10,
       "pulse_map_point": true,
       "show_gps_unavailable": true,

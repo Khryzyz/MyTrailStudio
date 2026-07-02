@@ -3,7 +3,7 @@ import subprocess
 from datetime import timedelta, timezone
 
 from overlay_renderer import render_closing_frame
-from utils import parse_dt
+from pipeline_utils import parse_dt
 
 
 RESOLUTION_SCALE = {

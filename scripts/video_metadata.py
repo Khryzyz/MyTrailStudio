@@ -4,7 +4,7 @@ import re
 import subprocess
 from datetime import datetime, timedelta, timezone
 
-from utils import parse_dt
+from pipeline_utils import parse_dt
 
 
 VIDEO_EXTENSIONS = (".mp4", ".mov")
