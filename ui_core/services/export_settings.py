@@ -10,7 +10,12 @@ VALID_RESOLUTIONS = {"1080p", "2k", "4k"}
 VALID_FPS = {15, 30, 60}
 
 
-def update_export_settings(project: dict[str, Any], updates: dict[str, Any]) -> dict[str, Any]:
+def update_export_settings(
+    project: dict[str, Any],
+    updates: dict[str, Any],
+    *,
+    preset_id: str | None = None,
+) -> dict[str, Any]:
     export = project["export"]
 
     if "output_dir" in updates and updates["output_dir"] is not None:
@@ -30,7 +35,7 @@ def update_export_settings(project: dict[str, Any], updates: dict[str, Any]) -> 
     if "output_hyperlapse_speed" in updates and updates["output_hyperlapse_speed"] is not None:
         speed = float(updates["output_hyperlapse_speed"])
         if speed < 0.1 or speed > 50.0:
-            raise ValueError("output_hyperlapse_speed must be between 0.1 y 50.0.")
+            raise ValueError("output_hyperlapse_speed must be between 0.1 and 50.0.")
         export["output_hyperlapse_speed"] = speed
 
     if "remove_audio" in updates and updates["remove_audio"] is not None:
@@ -52,8 +57,13 @@ def update_export_settings(project: dict[str, Any], updates: dict[str, Any]) -> 
     if "closing_seconds" in updates and updates["closing_seconds"] is not None:
         seconds = int(updates["closing_seconds"])
         if seconds < 1 or seconds > 5:
-            raise ValueError("closing_seconds must be between 1 y 5.")
+            raise ValueError("closing_seconds must be between 1 and 5.")
         export["closing_screen"]["seconds"] = seconds
+
+    if preset_id is not None:
+        export["preset_id"] = preset_id
+    elif any(value is not None for value in updates.values()):
+        export["preset_id"] = "custom"
 
     touch_project(project)
     save_project(project)

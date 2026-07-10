@@ -95,6 +95,8 @@ def build_project_summary(project: dict[str, Any]) -> dict[str, Any]:
             "items": timelines,
         },
         "gaps": validation.get("gaps", []),
+        "long_gaps": validation.get("long_gaps", []),
+        "coverage": validation.get("coverage", {}),
         "warnings": validation.get("warnings", []),
         "errors": validation.get("errors", []),
         "engine": {

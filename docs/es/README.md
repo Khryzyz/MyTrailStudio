@@ -116,6 +116,13 @@ Configurar exportacion:
 .\mts.ps1 set-export --project "<project-id>" --resolution 1080p --fps 30 --output-speed 3.5 --remove-audio --single-final-video --transitions --closing --closing-message "Route Completed" --closing-seconds 3
 ```
 
+O aplicar un preset:
+
+```powershell
+.\mts.ps1 list-export-presets
+.\mts.ps1 apply-export-preset --project "<project-id>" --preset standard-1080p
+```
+
 Generar preview:
 
 ```powershell
@@ -187,14 +194,11 @@ La CLI nueva usa configuracion temporal y no modifica `input/pipeline_config.jso
 
 ## Next Steps
 
-1. Pulir logs y progreso de render.
-2. Agregar vista resumida de gaps/timeline mas detallada.
-3. Agregar presets de exportacion.
-4. Preparar UI visual PySide6 sobre `ui_core`.
-5. Crear asistente visual: GPX, nombre de ruta, `output` y videos.
-6. Crear gestor visual de videos: importacion, estado GPX, hyperlapse, fecha manual.
-7. Crear pantalla de exportacion y render con confirmacion.
-8. Extraer layout configurable sin romper el layout aprobado actual.
+1. Preparar UI visual PySide6 sobre `ui_core`.
+2. Crear asistente visual: GPX, nombre de ruta, `output` y videos.
+3. Crear gestor visual de videos: importacion, estado GPX, hyperlapse, fecha manual.
+4. Crear pantalla de exportacion y render con confirmacion.
+5. Extraer layout configurable sin romper el layout aprobado actual.
 
 
 

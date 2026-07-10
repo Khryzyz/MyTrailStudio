@@ -19,8 +19,20 @@ def _log_path(project: dict[str, Any], action: str) -> Path:
     return logs_dir / f"{stamp}_{action}.log"
 
 
-def _run_logged(cmd: list[str], *, cwd: Path, log_path: Path, quiet: bool = False) -> int:
+def _run_logged(
+    cmd: list[str],
+    *,
+    cwd: Path,
+    log_path: Path,
+    quiet: bool = False,
+    label: str = "engine command",
+) -> int:
+    started_at = datetime.now(timezone.utc)
+    if quiet:
+        print(f"Running {label}...")
     with log_path.open("w", encoding="utf-8", errors="replace") as log:
+        log.write(f"Started UTC: {started_at.isoformat()}\n")
+        log.write(f"Working directory: {cwd}\n")
         log.write("Command:\n")
         log.write(" ".join(cmd))
         log.write("\n\nOutput:\n")
@@ -34,6 +46,12 @@ def _run_logged(cmd: list[str], *, cwd: Path, log_path: Path, quiet: bool = Fals
                 stderr=subprocess.STDOUT,
                 text=True,
             )
+            ended_at = datetime.now(timezone.utc)
+            duration = (ended_at - started_at).total_seconds()
+            log.write("\n")
+            log.write(f"Finished UTC: {ended_at.isoformat()}\n")
+            log.write(f"Duration seconds: {round(duration, 2)}\n")
+            log.write(f"Exit code: {completed.returncode}\n")
             return completed.returncode
 
         process = subprocess.Popen(
@@ -49,7 +67,15 @@ def _run_logged(cmd: list[str], *, cwd: Path, log_path: Path, quiet: bool = Fals
         for line in process.stdout:
             print(line, end="")
             log.write(line)
-        return process.wait()
+        code = process.wait()
+        ended_at = datetime.now(timezone.utc)
+        duration = (ended_at - started_at).total_seconds()
+        log.write("\n")
+        log.write(f"Finished UTC: {ended_at.isoformat()}\n")
+        log.write(f"Duration seconds: {round(duration, 2)}\n")
+        log.write(f"Exit code: {code}\n")
+        print(f"{label} finished with exit code {code}. Log: {log_path}")
+        return code
 
 
 def _remember_log(project: dict[str, Any], action: str, log_path: Path) -> None:
@@ -76,7 +102,7 @@ def run_engine_validate(project: dict[str, Any], quiet: bool = False) -> int:
         "--validate-only",
     ]
 
-    code = _run_logged(cmd, cwd=engine_root, log_path=log_path, quiet=quiet)
+    code = _run_logged(cmd, cwd=engine_root, log_path=log_path, quiet=quiet, label="engine validation")
     _remember_log(project, "engine_validate", log_path)
     manifest_path = Path(project["export"]["output_dir"]) / "data" / "manifest.json"
     if manifest_path.exists():
@@ -85,7 +111,7 @@ def run_engine_validate(project: dict[str, Any], quiet: bool = False) -> int:
         save_project(project)
 
     if quiet:
-        print(f"Log: {log_path}")
+        print(f"engine validation finished with exit code {code}. Log: {log_path}")
     return code
 
 
@@ -116,11 +142,17 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10, quiet: bool =
         str(config_path),
     ]
 
-    validate_code = _run_logged(validate_cmd, cwd=engine_root, log_path=validate_log_path, quiet=quiet)
+    validate_code = _run_logged(
+        validate_cmd,
+        cwd=engine_root,
+        log_path=validate_log_path,
+        quiet=quiet,
+        label="preview validation",
+    )
     _remember_log(project, "engine_preview_validate", validate_log_path)
     if validate_code != 0:
         if quiet:
-            print(f"Log: {validate_log_path}")
+            print(f"preview validation finished with exit code {validate_code}. Log: {validate_log_path}")
         return validate_code
 
     if not manifest_path.exists():
@@ -138,10 +170,10 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10, quiet: bool =
         "--manifest",
         str(manifest_path),
     ]
-    code = _run_logged(preview_cmd, cwd=engine_root, log_path=preview_log_path, quiet=quiet)
+    code = _run_logged(preview_cmd, cwd=engine_root, log_path=preview_log_path, quiet=quiet, label="preview render")
     _remember_log(project, "engine_preview", preview_log_path)
     if quiet:
-        print(f"Log: {preview_log_path}")
+        print(f"preview render finished with exit code {code}. Log: {preview_log_path}")
     return code
 
 
@@ -168,11 +200,17 @@ def run_engine_render_final(project: dict[str, Any], quiet: bool = False) -> int
         str(config_path),
     ]
 
-    validate_code = _run_logged(validate_cmd, cwd=engine_root, log_path=validate_log_path, quiet=quiet)
+    validate_code = _run_logged(
+        validate_cmd,
+        cwd=engine_root,
+        log_path=validate_log_path,
+        quiet=quiet,
+        label="final render validation",
+    )
     _remember_log(project, "engine_render_validate", validate_log_path)
     if validate_code != 0:
         if quiet:
-            print(f"Log: {validate_log_path}")
+            print(f"final render validation finished with exit code {validate_code}. Log: {validate_log_path}")
         return validate_code
 
     if not manifest_path.exists():
@@ -190,10 +228,10 @@ def run_engine_render_final(project: dict[str, Any], quiet: bool = False) -> int
         "--manifest",
         str(manifest_path),
     ]
-    code = _run_logged(render_cmd, cwd=engine_root, log_path=render_log_path, quiet=quiet)
+    code = _run_logged(cmd=render_cmd, cwd=engine_root, log_path=render_log_path, quiet=quiet, label="final render")
     _remember_log(project, "engine_render_final", render_log_path)
     if quiet:
-        print(f"Log: {render_log_path}")
+        print(f"final render finished with exit code {code}. Log: {render_log_path}")
     return code
 
 

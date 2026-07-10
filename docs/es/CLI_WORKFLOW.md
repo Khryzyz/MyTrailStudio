@@ -105,6 +105,18 @@ Validacion tecnica del motor:
 
 ## Exportacion
 
+Listar presets de exportacion:
+
+```powershell
+.\mts.ps1 list-export-presets
+```
+
+Aplicar un preset:
+
+```powershell
+.\mts.ps1 apply-export-preset --project "<project-id>" --preset standard-1080p
+```
+
 Configurar `output`:
 
 ```powershell
@@ -121,6 +133,15 @@ Opciones utiles:
 --single-final-video / --no-single-final-video
 --transitions / --no-transitions
 --closing / --no-closing
+```
+
+Presets disponibles:
+
+```text
+preview-fast
+standard-1080p
+final-4k
+social-vertical-source
 ```
 
 ## Preview
@@ -189,6 +210,7 @@ Parametros opcionales:
 -Resolution 1080p
 -Fps 30
 -OutputSpeed 3.5
+-ExportPreset standard-1080p
 -PreviewSeconds 10
 -ClosingMessage "Route Completed"
 -ClosingSeconds 3

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from ui_core.models.project_model import touch_project
 from ui_core.services.engine_config_builder import build_engine_config
+from ui_core.services.export_presets import apply_export_preset, list_export_presets
 from ui_core.services.export_settings import update_export_settings
 from ui_core.services.pipeline_adapter import run_engine_preview, run_engine_render_final, run_engine_validate
 from ui_core.services.project_validator import validate_project
@@ -33,6 +34,11 @@ def print_validation_report(report: dict) -> None:
     print(f"Videos: {report['videos']}")
     print(f"Timelines: {report['timelines']}")
     print(f"Detected gaps: {len(report['gaps'])}")
+    coverage = report.get("coverage", {})
+    if coverage:
+        print(f"GPX coverage: {coverage.get('percent')}% ({coverage.get('overlap_seconds')} s)")
+    if report.get("long_gaps"):
+        print(f"Long gaps: {len(report['long_gaps'])}")
 
     if report["warnings"]:
         print("")
@@ -88,6 +94,8 @@ def print_project_summary(summary: dict) -> None:
         print("Statuses: " + ", ".join(f"{key}={value}" for key, value in sorted(videos["statuses"].items())))
     print(f"Timelines: {summary['timelines']['count']}")
     print(f"Gaps: {len(summary['gaps'])}")
+    if summary.get("coverage"):
+        print(f"GPX coverage: {summary['coverage'].get('percent')}%")
     print("")
     print("Export")
     export = summary["export"]
@@ -95,6 +103,7 @@ def print_project_summary(summary: dict) -> None:
     print(f"Resolution: {export.get('resolution')}")
     print(f"FPS: {export.get('fps')}")
     print(f"Final speed: {export.get('output_hyperlapse_speed')}x")
+    print(f"Preset: {export.get('preset_id') or 'custom'}")
     print(f"Remove audio: {export.get('remove_audio')}")
     print(f"Single final video: {export.get('single_final_video')}")
     print(f"Transitions: {export.get('apply_transitions')}")
@@ -253,7 +262,7 @@ def cmd_add_videos_dir(args: argparse.Namespace) -> int:
 def cmd_build_engine_config(args: argparse.Namespace) -> int:
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
     config_path = build_engine_config(project)
-    print("Config temporal generada:")
+    print("Temporary config generated:")
     print(config_path)
     return 0
 
@@ -275,6 +284,35 @@ def cmd_set_export(args: argparse.Namespace) -> int:
     export = update_export_settings(project, updates)
     print("Export settings updated")
     print_json(export)
+    return 0
+
+
+def cmd_list_export_presets(args: argparse.Namespace) -> int:
+    print("Export presets")
+    for preset in list_export_presets():
+        settings = preset["settings"]
+        print("")
+        print(f"ID: {preset['id']}")
+        print(f"Name: {preset['name']}")
+        print(f"Description: {preset['description']}")
+        print(
+            "Settings: "
+            f"{settings['resolution']}, {settings['fps']} fps, "
+            f"{settings['output_hyperlapse_speed']}x, "
+            f"remove_audio={settings['remove_audio']}, "
+            f"transitions={settings['apply_transitions']}, "
+            f"closing={settings['closing_enabled']}"
+        )
+    return 0
+
+
+def cmd_apply_export_preset(args: argparse.Namespace) -> int:
+    project = load_project(args.project, Path(args.app_data) if args.app_data else None)
+    result = apply_export_preset(project, args.preset)
+    print("Export preset applied")
+    print(f"Project: {project['project']['id']} - {project['project']['name']}")
+    print(f"Preset: {result['preset_id']} - {result['preset_name']}")
+    print_json(result["export"])
     return 0
 
 
@@ -343,7 +381,7 @@ def cmd_set_video_time(args: argparse.Namespace) -> int:
     matched["manual_creation_time_utc"] = args.time
     touch_project(project)
     save_project(project)
-    print("Date manual asignada:")
+    print("Manual date assigned:")
     print_json({
         "video_id": matched["id"],
         "name": matched["name"],
@@ -433,6 +471,18 @@ def build_parser() -> argparse.ArgumentParser:
     set_export.add_argument("--closing-seconds", type=int)
     set_export.set_defaults(func=cmd_set_export)
 
+    list_presets = subparsers.add_parser("list-export-presets")
+    list_presets.set_defaults(func=cmd_list_export_presets)
+
+    apply_preset = subparsers.add_parser("apply-export-preset")
+    apply_preset.add_argument("--project", required=True)
+    apply_preset.add_argument(
+        "--preset",
+        required=True,
+        choices=[preset["id"] for preset in list_export_presets()],
+    )
+    apply_preset.set_defaults(func=cmd_apply_export_preset)
+
     engine_validate = subparsers.add_parser("engine-validate")
     engine_validate.add_argument("--project", required=True)
     engine_validate.add_argument("--quiet", action="store_true")
@@ -465,13 +515,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     set_time = subparsers.add_parser("set-video-time")
     set_time.add_argument("--project", required=True)
-    set_time.add_argument("--video", required=True, help="ID o nombre del video.")
-    set_time.add_argument("--time", required=True, help="Date ISO UTC, por ejemplo 2026-07-09T12:00:00Z.")
+    set_time.add_argument("--video", required=True, help="Video ID or name.")
+    set_time.add_argument("--time", required=True, help="UTC ISO date, for example 2026-07-09T12:00:00Z.")
     set_time.set_defaults(func=cmd_set_video_time)
 
     remove = subparsers.add_parser("remove-video")
     remove.add_argument("--project", required=True)
-    remove.add_argument("--video", required=True, help="ID o nombre del video.")
+    remove.add_argument("--video", required=True, help="Video ID or name.")
     remove.set_defaults(func=cmd_remove_video)
 
     delete = subparsers.add_parser("delete-project")

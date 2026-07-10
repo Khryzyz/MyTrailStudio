@@ -20,6 +20,7 @@ DEFAULT_EXPORT = {
     "remove_audio": True,
     "single_final_video": True,
     "apply_transitions": True,
+    "preset_id": "standard-1080p",
     "preview": {
         "enabled": False,
         "seconds": 10,

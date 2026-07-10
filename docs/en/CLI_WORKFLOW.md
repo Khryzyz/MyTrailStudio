@@ -105,6 +105,18 @@ Engine technical validation:
 
 ## Export
 
+List export presets:
+
+```powershell
+.\mts.ps1 list-export-presets
+```
+
+Apply a preset:
+
+```powershell
+.\mts.ps1 apply-export-preset --project "<project-id>" --preset standard-1080p
+```
+
 Configure output:
 
 ```powershell
@@ -121,6 +133,15 @@ Useful options:
 --single-final-video / --no-single-final-video
 --transitions / --no-transitions
 --closing / --no-closing
+```
+
+Available presets:
+
+```text
+preview-fast
+standard-1080p
+final-4k
+social-vertical-source
 ```
 
 ## Preview
@@ -189,6 +210,7 @@ Optional parameters:
 -Resolution 1080p
 -Fps 30
 -OutputSpeed 3.5
+-ExportPreset standard-1080p
 -PreviewSeconds 10
 -ClosingMessage "Route Completed"
 -ClosingSeconds 3

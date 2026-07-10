@@ -5,6 +5,7 @@ param(
     [string]$Resolution = "1080p",
     [int]$Fps = 30,
     [double]$OutputSpeed = 3.5,
+    [string]$ExportPreset = "",
     [int]$PreviewSeconds = 10,
     [string]$ClosingMessage = "Route Completed",
     [int]$ClosingSeconds = 3,
@@ -35,18 +36,24 @@ Run-Step "1. Initial summary" {
     .\mts.ps1 project-summary --project $ProjectId
 }
 
-Run-Step "2. Configure final export" {
-    .\mts.ps1 set-export `
-        --project $ProjectId `
-        --resolution $Resolution `
-        --fps $Fps `
-        --output-speed $OutputSpeed `
-        --remove-audio `
-        --single-final-video `
-        --transitions `
-        --closing `
-        --closing-message $ClosingMessage `
-        --closing-seconds $ClosingSeconds
+if ($ExportPreset) {
+    Run-Step "2. Apply export preset" {
+        .\mts.ps1 apply-export-preset --project $ProjectId --preset $ExportPreset
+    }
+} else {
+    Run-Step "2. Configure final export" {
+        .\mts.ps1 set-export `
+            --project $ProjectId `
+            --resolution $Resolution `
+            --fps $Fps `
+            --output-speed $OutputSpeed `
+            --remove-audio `
+            --single-final-video `
+            --transitions `
+            --closing `
+            --closing-message $ClosingMessage `
+            --closing-seconds $ClosingSeconds
+    }
 }
 
 Run-Step "3. Validate engine" {
