@@ -33,7 +33,7 @@ ffprobe -version
 ## Estructura
 
 ```text
-J:\Fotos\MyTrailStudio
+<raiz-engine>
   input\
     pipeline_config.json
   output\
@@ -59,7 +59,7 @@ J:\Fotos\MyTrailStudio
 2. Abre PowerShell en la raiz del engine:
 
 ```powershell
-cd J:\Fotos\MyTrailStudio
+cd <raiz-engine>
 ```
 
 3. Confirma Python y FFmpeg:
@@ -93,13 +93,13 @@ Cada proyecto referencia GPX/videos originales sin moverlos. Los subproductos te
 Crear proyecto:
 
 ```powershell
-.\mts.ps1 create-project --name "Mi Ruta" --gpx "E:\Ruta\track.gpx" --output "E:\Ruta\output"
+.\mts.ps1 create-project --name "Mi Ruta" --gpx "<carpeta-ruta>\track.gpx" --output "<carpeta-ruta>\output"
 ```
 
 Agregar videos desde carpeta:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "<carpeta-ruta>" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 Si un video no tiene fecha correcta, se puede ajustar manualmente con `set-video-time`.
@@ -153,9 +153,9 @@ Con render final:
 Para el ejemplo:
 
 ```text
-E:\Ruta\output\previews
-E:\Ruta\output\final
-E:\Ruta\output\data\manifest.json
+<carpeta-ruta>\output\previews
+<carpeta-ruta>\output\final
+<carpeta-ruta>\output\data\manifest.json
 ```
 
 El render final genera tambien:

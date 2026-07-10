@@ -33,7 +33,7 @@ ffprobe -version
 ## Structure
 
 ```text
-J:\Fotos\MyTrailStudio
+<engine-root>
   input\
     pipeline_config.json
   output\
@@ -60,7 +60,7 @@ J:\Fotos\MyTrailStudio
 2. Open PowerShell at the engine root:
 
 ```powershell
-cd J:\Fotos\MyTrailStudio
+cd <engine-root>
 ```
 
 3. Confirm Python and FFmpeg:
@@ -94,13 +94,13 @@ Each project references original GPX/videos without moving them. Temporary produ
 Create a project:
 
 ```powershell
-.\mts.ps1 create-project --name "My Route" --gpx "E:\Route\track.gpx" --output "E:\Route\output"
+.\mts.ps1 create-project --name "My Route" --gpx "<route-folder>\track.gpx" --output "<route-folder>\output"
 ```
 
 Add videos from a folder:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Route" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "<route-folder>" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 If a video has an incorrect date, adjust it manually with `set-video-time`.
@@ -154,9 +154,9 @@ With final render:
 Example:
 
 ```text
-E:\Route\output\previews
-E:\Route\output\final
-E:\Route\output\data\manifest.json
+<route-folder>\output\previews
+<route-folder>\output\final
+<route-folder>\output\data\manifest.json
 ```
 
 The final render also generates:
@@ -196,4 +196,3 @@ The new CLI uses temporary configuration and does not modify `input/pipeline_con
 6. Create the visual video manager: import, GPX status, hyperlapse, manual date.
 7. Create the export and render screen with confirmation.
 8. Extract configurable layout without breaking the approved current layout.
-

@@ -5,7 +5,7 @@ Guia de comandos para la capa `ui_core`.
 Ejecuta los comandos desde la raiz del engine:
 
 ```powershell
-cd J:\Fotos\MyTrailStudio
+cd <raiz-engine>
 ```
 
 ## Ayuda
@@ -27,7 +27,7 @@ Listar proyectos:
 Crear proyecto:
 
 ```powershell
-.\mts.ps1 create-project --name "Mi Ruta" --gpx "E:\Ruta\track.gpx" --output "E:\Ruta\output"
+.\mts.ps1 create-project --name "Mi Ruta" --gpx "<carpeta-ruta>\track.gpx" --output "<carpeta-ruta>\output"
 ```
 
 Inspeccionar JSON completo:
@@ -57,13 +57,13 @@ Los videos pueden venir de cualquier camara siempre que sean MP4/MOV y tengan un
 Agregar un video:
 
 ```powershell
-.\mts.ps1 add-video --project "<project-id>" --video "E:\Ruta\VIDEO_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-video --project "<project-id>" --video "<carpeta-ruta>\VIDEO_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 Agregar carpeta completa:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "<carpeta-ruta>" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 Por defecto, `add-videos-dir` omite:
@@ -74,7 +74,7 @@ Por defecto, `add-videos-dir` omite:
 Para incluir videos fuera del GPX a proposito:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0 --include-out-of-gpx
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "<carpeta-ruta>" --mode hyperlapse --hyperlapse-speed 2.0 --include-out-of-gpx
 ```
 
 Quitar video del proyecto:
