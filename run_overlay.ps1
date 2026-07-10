@@ -1,5 +1,5 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$Pipeline = Join-Path $ScriptDir "run_dji_overlay_pipeline.ps1"
+$Pipeline = Join-Path $ScriptDir "run_actioncamera_overlay_pipeline.ps1"
 
 if (!(Test-Path $Pipeline)) {
     Write-Host "FALTA pipeline principal: $Pipeline" -ForegroundColor Red
@@ -8,3 +8,5 @@ if (!(Test-Path $Pipeline)) {
 
 & $Pipeline @args
 exit $LASTEXITCODE
+
+

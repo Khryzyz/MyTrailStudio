@@ -17,7 +17,7 @@ if ($ResumeMode) {
 
 Write-Host ""
 Write-Host "====================================="
-Write-Host " DJI / GPX Overlay Pipeline"
+Write-Host " ActionCamera / GPX Overlay Pipeline"
 Write-Host "====================================="
 Write-Host ""
 
@@ -154,5 +154,6 @@ if ($manifest.config.output.preview.add -eq $true) {
         exit $LASTEXITCODE
     }
 }
+
 
 

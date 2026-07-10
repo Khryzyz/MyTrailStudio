@@ -5,7 +5,7 @@ Guia de comandos para la capa `ui_core`.
 Ejecuta los comandos desde la raiz del engine:
 
 ```powershell
-cd J:\Fotos\DJI
+cd J:\Fotos\ActionCamera
 ```
 
 ## Ayuda
@@ -50,10 +50,12 @@ Esto no borra GPX, videos ni audios originales.
 
 ## Videos
 
+Los videos pueden venir de cualquier camara siempre que sean MP4/MOV y tengan una fecha de creacion util. La CLI usa primero `creation_time` de metadata y, si no existe, la fecha de creacion del archivo.
+
 Agregar un video:
 
 ```powershell
-python -m ui_core.cli add-video --project "<project-id>" --video "E:\Ruta\DJI_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
+python -m ui_core.cli add-video --project "<project-id>" --video "E:\Ruta\VIDEO_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 Agregar carpeta completa:
@@ -76,13 +78,13 @@ python -m ui_core.cli add-videos-dir --project "<project-id>" --dir "E:\Ruta" --
 Quitar video del proyecto:
 
 ```powershell
-python -m ui_core.cli remove-video --project "<project-id>" --video "DJI_0001.MP4"
+python -m ui_core.cli remove-video --project "<project-id>" --video "VIDEO_0001.MP4"
 ```
 
 Asignar fecha manual a un video sin metadata valida:
 
 ```powershell
-python -m ui_core.cli set-video-time --project "<project-id>" --video "DJI_0001.MP4" --time "2026-06-13T13:18:14Z"
+python -m ui_core.cli set-video-time --project "<project-id>" --video "VIDEO_0001.MP4" --time "2026-06-13T13:18:14Z"
 ```
 
 ## Validacion
@@ -189,4 +191,6 @@ Parametros opcionales:
 -ClosingMessage "Ruta Finalizada"
 -ClosingSeconds 3
 ```
+
+
 

@@ -3,8 +3,8 @@ import math
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-csv_path = r"J:\Fotos\DJI\20260628_153709_overlay_1s.csv"
-out_path = r"J:\Fotos\DJI\overlay_preview_nuevo_60s_v3.png"
+csv_path = r"J:\Fotos\ActionCamera\20260628_153709_overlay_1s.csv"
+out_path = r"J:\Fotos\ActionCamera\overlay_preview_nuevo_60s_v3.png"
 
 W, H = 2688, 1512
 target_second = 60
@@ -237,6 +237,8 @@ draw.ellipse((px-11, py-11, px+11, py+11), fill=accent2)
 
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 

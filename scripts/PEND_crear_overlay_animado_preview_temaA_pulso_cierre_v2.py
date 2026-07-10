@@ -5,8 +5,8 @@ import shutil
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-csv_path = r"J:\Fotos\DJI\20260628_153709_overlay_1s.csv"
-frames_dir = r"J:\Fotos\DJI\overlay_frames_temaA_pulso_cierre_60_70_v2"
+csv_path = r"J:\Fotos\ActionCamera\20260628_153709_overlay_1s.csv"
+frames_dir = r"J:\Fotos\ActionCamera\overlay_frames_temaA_pulso_cierre_60_70_v2"
 
 W, H = 2688, 1512
 start_second = 60
@@ -24,7 +24,7 @@ os.makedirs(frames_dir, exist_ok=True)
 
 def load_font(size):
     candidates = [
-        r"J:\Fotos\DJI\font\font.otf",
+        r"J:\Fotos\ActionCamera\font\font.otf",
         r"C:\Windows\Fonts\bahnschrift.ttf",
         r"C:\Windows\Fonts\segoeui.ttf",
         r"C:\Windows\Fonts\arial.ttf",
@@ -294,7 +294,7 @@ for frame in range(total_frames):
     out = os.path.join(frames_dir, f"frame_{frame:05d}.png")
     img.save(out)
 
-closing_image_path = r"J:\Fotos\DJI\preview_cierre_ruta_tema_A.png"
+closing_image_path = r"J:\Fotos\ActionCamera\preview_cierre_ruta_tema_A.png"
 
 for cierre_frame in range(70, 100):
     cierre = Image.new("RGBA", (W, H), (0, 0, 0, 255))
@@ -313,4 +313,6 @@ for cierre_frame in range(70, 100):
     cierre.save(os.path.join(frames_dir, f"frame_{cierre_frame:05d}.png"))
 print("Frames creados:", total_frames)
 print("Carpeta:", frames_dir)
+
+
 

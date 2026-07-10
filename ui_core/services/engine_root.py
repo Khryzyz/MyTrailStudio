@@ -20,9 +20,10 @@ def resolve_engine_root(value: str | None = None) -> Path:
     if missing:
         missing_text = ", ".join(missing)
         raise FileNotFoundError(
-            "La carpeta actual no parece ser el engine DJI/GPX Overlay. "
+            "La carpeta actual no parece ser el engine ActionCamera/GPX Overlay. "
             f"Root usado: {root}. Faltan: {missing_text}. "
             "Ejecuta el comando desde la carpeta del engine o usa --engine-root."
         )
     return root
+
 

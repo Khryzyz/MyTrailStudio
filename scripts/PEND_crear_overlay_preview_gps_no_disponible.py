@@ -3,8 +3,8 @@ import math
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-csv_path = r"J:\Fotos\DJI\20260628_153709_overlay_1s.csv"
-out_path = r"J:\Fotos\DJI\overlay_preview_gps_no_disponible.png"
+csv_path = r"J:\Fotos\ActionCamera\20260628_153709_overlay_1s.csv"
+out_path = r"J:\Fotos\ActionCamera\overlay_preview_gps_no_disponible.png"
 
 W, H = 2688, 1512
 target_second = 60
@@ -252,6 +252,8 @@ draw.rounded_rectangle(
 draw.text((gps_x + 17, gps_y + 7), gps_msg, font=font_gps, fill=(255, 210, 90, 255))
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 

@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-out_path = r"J:\Fotos\DJI\preview_cierre_ruta_tema_A.png"
+out_path = r"J:\Fotos\ActionCamera\preview_cierre_ruta_tema_A.png"
 
 W, H = 1920, 1080
 
@@ -14,7 +14,7 @@ fecha = "28/06/2026"
 
 def load_font(size):
     candidates = [
-        r"J:\Fotos\DJI\font\font.otf",
+        r"J:\Fotos\ActionCamera\font\font.otf",
         r"C:\Windows\Fonts\bahnschrift.ttf",
         r"C:\Windows\Fonts\segoeui.ttf",
         r"C:\Windows\Fonts\arial.ttf",
@@ -117,3 +117,5 @@ draw.text(((W - footer_w) / 2, 835), footer_text, font=font_footer, fill=text_so
 
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+

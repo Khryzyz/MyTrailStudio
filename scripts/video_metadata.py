@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from pipeline_utils import parse_dt
 
@@ -108,6 +108,15 @@ def ffprobe_video(video_path):
     start = parse_dt(creation_time)
     start_source = "ffprobe" if start else "unknown"
     creation_time_used = creation_time
+
+    if not start:
+        try:
+            file_created = datetime.fromtimestamp(os.path.getctime(video_path), timezone.utc)
+            start = file_created
+            start_source = "filesystem_created"
+            creation_time_used = file_created.isoformat()
+        except Exception:
+            pass
 
     end = start + timedelta(seconds=duration) if start else None
 

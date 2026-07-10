@@ -1,2 +1,3 @@
-"""Core services for the future DJI/GPX Overlay UI."""
+"""Core services for the future ActionCamera/GPX Overlay UI."""
+
 

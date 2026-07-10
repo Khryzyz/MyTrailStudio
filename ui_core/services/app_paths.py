@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-APP_DIR_NAME = "DJIOverlayUI"
+APP_DIR_NAME = "ActionCameraOverlayUI"
 
 
 def default_app_data_dir() -> Path:
@@ -16,4 +16,5 @@ def default_app_data_dir() -> Path:
 
 def resolve_app_data_dir(value: str | None = None) -> Path:
     return Path(value).expanduser().resolve() if value else default_app_data_dir()
+
 

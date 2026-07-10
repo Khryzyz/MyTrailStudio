@@ -3,8 +3,8 @@ import math
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-csv_path = r"J:\Fotos\DJI\20260628_153709_overlay_1s.csv"
-out_path = r"J:\Fotos\DJI\overlay_preview_tema_A_deportivo.png"
+csv_path = r"J:\Fotos\ActionCamera\20260628_153709_overlay_1s.csv"
+out_path = r"J:\Fotos\ActionCamera\overlay_preview_tema_A_deportivo.png"
 
 W, H = 2688, 1512
 target_second = 60
@@ -16,7 +16,7 @@ G = 35   # separación uniforme entre paneles
 
 def load_font(size):
     candidates = [
-        r"J:\Fotos\DJI\font\font.otf",
+        r"J:\Fotos\ActionCamera\font\font.otf",
         r"C:\Windows\Fonts\bahnschrift.ttf",
         r"C:\Windows\Fonts\segoeui.ttf",
         r"C:\Windows\Fonts\arial.ttf",
@@ -258,6 +258,8 @@ draw.text((M, M + 44), hora_txt, font=font_time, fill=text_main, stroke_width=3,
 # ===== FIN FECHA HORA FORZADA =====
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 
