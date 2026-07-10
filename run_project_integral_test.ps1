@@ -50,11 +50,11 @@ Run-Step "2. Configurar exportacion final" {
 }
 
 Run-Step "3. Validar motor" {
-    python -m ui_core.cli engine-validate --project $ProjectId
+    python -m ui_core.cli engine-validate --project $ProjectId --quiet
 }
 
 Run-Step "4. Generar preview" {
-    python -m ui_core.cli engine-preview --project $ProjectId --seconds $PreviewSeconds
+    python -m ui_core.cli engine-preview --project $ProjectId --seconds $PreviewSeconds --quiet
 }
 
 Run-Step "5. Revisar preview en resumen" {
@@ -63,7 +63,7 @@ Run-Step "5. Revisar preview en resumen" {
 
 if ($RunFinalRender) {
     Run-Step "6. Render final" {
-        python -m ui_core.cli engine-render-final --project $ProjectId --confirm "RENDER_FINAL"
+        python -m ui_core.cli engine-render-final --project $ProjectId --confirm "RENDER_FINAL" --quiet
     }
 } else {
     Write-Host ""

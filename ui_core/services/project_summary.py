@@ -21,6 +21,34 @@ def existing_preview_files(project: dict[str, Any]) -> list[str]:
     return [str(path) for path in sorted(previews_dir.glob("*.mp4"))]
 
 
+def existing_final_files(project: dict[str, Any]) -> list[str]:
+    final_dir = Path(project["export"]["output_dir"]) / "final"
+    if not final_dir.is_dir():
+        return []
+    return [
+        str(path)
+        for path in sorted(final_dir.glob("*.mp4"))
+    ]
+
+
+def existing_render_reports(project: dict[str, Any]) -> list[str]:
+    final_dir = Path(project["export"]["output_dir"]) / "final"
+    if not final_dir.is_dir():
+        return []
+    candidates = [
+        final_dir / "render_report.json",
+        final_dir / "render_report.txt",
+    ]
+    return [str(path) for path in candidates if path.is_file()]
+
+
+def existing_log_files(project: dict[str, Any]) -> list[str]:
+    logs_dir = Path(project["workspace"]["logs_dir"])
+    if not logs_dir.is_dir():
+        return []
+    return [str(path) for path in sorted(logs_dir.glob("*.log"))]
+
+
 def build_project_summary(project: dict[str, Any]) -> dict[str, Any]:
     videos = project.get("assets", {}).get("videos", [])
     timelines = project.get("timelines", [])
@@ -74,6 +102,9 @@ def build_project_summary(project: dict[str, Any]) -> dict[str, Any]:
             "last_manifest_path": manifest_path,
             "manifest_exists": bool(manifest_path and Path(manifest_path).is_file()),
             "previews": existing_preview_files(project),
+            "finals": existing_final_files(project),
+            "render_reports": existing_render_reports(project),
+            "logs": existing_log_files(project),
         },
         "export": project.get("export", {}),
         "duration_text": {
@@ -82,4 +113,3 @@ def build_project_summary(project: dict[str, Any]) -> dict[str, Any]:
             "videos_real": seconds_to_hms(total_real_seconds),
         },
     }
-

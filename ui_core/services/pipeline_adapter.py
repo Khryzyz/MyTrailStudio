@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -11,10 +12,59 @@ from ui_core.services.engine_root import resolve_engine_root
 from ui_core.services.project_store import save_project
 
 
-def run_engine_validate(project: dict[str, Any]) -> int:
+def _log_path(project: dict[str, Any], action: str) -> Path:
+    logs_dir = Path(project["workspace"]["logs_dir"])
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return logs_dir / f"{stamp}_{action}.log"
+
+
+def _run_logged(cmd: list[str], *, cwd: Path, log_path: Path, quiet: bool = False) -> int:
+    with log_path.open("w", encoding="utf-8", errors="replace") as log:
+        log.write("Command:\n")
+        log.write(" ".join(cmd))
+        log.write("\n\nOutput:\n")
+        log.flush()
+
+        if quiet:
+            completed = subprocess.run(
+                cmd,
+                cwd=str(cwd),
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            return completed.returncode
+
+        process = subprocess.Popen(
+            cmd,
+            cwd=str(cwd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        assert process.stdout is not None
+        for line in process.stdout:
+            print(line, end="")
+            log.write(line)
+        return process.wait()
+
+
+def _remember_log(project: dict[str, Any], action: str, log_path: Path) -> None:
+    engine = project.setdefault("engine", {})
+    logs = engine.setdefault("logs", {})
+    logs[action] = str(log_path)
+    touch_project(project)
+    save_project(project)
+
+
+def run_engine_validate(project: dict[str, Any], quiet: bool = False) -> int:
     engine_root = resolve_engine_root(project["workspace"].get("engine_root"))
     config_path = build_engine_config(project)
     validate_script = engine_root / "scripts" / "validate_pipeline.py"
+    log_path = _log_path(project, "engine_validate")
 
     cmd = [
         sys.executable,
@@ -26,17 +76,20 @@ def run_engine_validate(project: dict[str, Any]) -> int:
         "--validate-only",
     ]
 
-    completed = subprocess.run(cmd, cwd=str(engine_root))
+    code = _run_logged(cmd, cwd=engine_root, log_path=log_path, quiet=quiet)
+    _remember_log(project, "engine_validate", log_path)
     manifest_path = Path(project["export"]["output_dir"]) / "data" / "manifest.json"
     if manifest_path.exists():
         project["engine"]["last_manifest_path"] = str(manifest_path)
         touch_project(project)
         save_project(project)
 
-    return completed.returncode
+    if quiet:
+        print(f"Log: {log_path}")
+    return code
 
 
-def run_engine_preview(project: dict[str, Any], seconds: int = 10) -> int:
+def run_engine_preview(project: dict[str, Any], seconds: int = 10, quiet: bool = False) -> int:
     if seconds < 1 or seconds > 60:
         raise ValueError("La preview debe estar entre 1 y 60 segundos.")
 
@@ -51,6 +104,8 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10) -> int:
     validate_script = engine_root / "scripts" / "validate_pipeline.py"
     render_preview_script = engine_root / "scripts" / "render_preview.py"
     manifest_path = Path(project["export"]["output_dir"]) / "data" / "manifest.json"
+    validate_log_path = _log_path(project, "engine_preview_validate")
+    preview_log_path = _log_path(project, "engine_preview")
 
     validate_cmd = [
         sys.executable,
@@ -61,9 +116,12 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10) -> int:
         str(config_path),
     ]
 
-    validate_result = subprocess.run(validate_cmd, cwd=str(engine_root))
-    if validate_result.returncode != 0:
-        return validate_result.returncode
+    validate_code = _run_logged(validate_cmd, cwd=engine_root, log_path=validate_log_path, quiet=quiet)
+    _remember_log(project, "engine_preview_validate", validate_log_path)
+    if validate_code != 0:
+        if quiet:
+            print(f"Log: {validate_log_path}")
+        return validate_code
 
     if not manifest_path.exists():
         raise FileNotFoundError(f"No se encontro manifest despues de validar: {manifest_path}")
@@ -80,10 +138,14 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10) -> int:
         "--manifest",
         str(manifest_path),
     ]
-    return subprocess.run(preview_cmd, cwd=str(engine_root)).returncode
+    code = _run_logged(preview_cmd, cwd=engine_root, log_path=preview_log_path, quiet=quiet)
+    _remember_log(project, "engine_preview", preview_log_path)
+    if quiet:
+        print(f"Log: {preview_log_path}")
+    return code
 
 
-def run_engine_render_final(project: dict[str, Any]) -> int:
+def run_engine_render_final(project: dict[str, Any], quiet: bool = False) -> int:
     engine_root = resolve_engine_root(project["workspace"].get("engine_root"))
     config_path = build_engine_config(project, overrides={
         "preview": {
@@ -94,6 +156,8 @@ def run_engine_render_final(project: dict[str, Any]) -> int:
     validate_script = engine_root / "scripts" / "validate_pipeline.py"
     render_final_script = engine_root / "scripts" / "render_final.py"
     manifest_path = Path(project["export"]["output_dir"]) / "data" / "manifest.json"
+    validate_log_path = _log_path(project, "engine_render_validate")
+    render_log_path = _log_path(project, "engine_render_final")
 
     validate_cmd = [
         sys.executable,
@@ -104,9 +168,12 @@ def run_engine_render_final(project: dict[str, Any]) -> int:
         str(config_path),
     ]
 
-    validate_result = subprocess.run(validate_cmd, cwd=str(engine_root))
-    if validate_result.returncode != 0:
-        return validate_result.returncode
+    validate_code = _run_logged(validate_cmd, cwd=engine_root, log_path=validate_log_path, quiet=quiet)
+    _remember_log(project, "engine_render_validate", validate_log_path)
+    if validate_code != 0:
+        if quiet:
+            print(f"Log: {validate_log_path}")
+        return validate_code
 
     if not manifest_path.exists():
         raise FileNotFoundError(f"No se encontro manifest despues de validar: {manifest_path}")
@@ -123,4 +190,8 @@ def run_engine_render_final(project: dict[str, Any]) -> int:
         "--manifest",
         str(manifest_path),
     ]
-    return subprocess.run(render_cmd, cwd=str(engine_root)).returncode
+    code = _run_logged(render_cmd, cwd=engine_root, log_path=render_log_path, quiet=quiet)
+    _remember_log(project, "engine_render_final", render_log_path)
+    if quiet:
+        print(f"Log: {render_log_path}")
+    return code

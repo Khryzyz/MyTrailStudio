@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -130,6 +131,20 @@ def print_project_summary(summary: dict) -> None:
             print(f" - {preview}")
     else:
         print("Previews: ninguno detectado")
+    if engine["finals"]:
+        print("Finales:")
+        for final in engine["finals"]:
+            print(f" - {final}")
+    else:
+        print("Finales: ninguno detectado")
+    if engine["render_reports"]:
+        print("Reportes:")
+        for report in engine["render_reports"]:
+            print(f" - {report}")
+    if engine["logs"]:
+        print("Logs:")
+        for log in engine["logs"][-5:]:
+            print(f" - {log}")
 
 
 def cmd_create_project(args: argparse.Namespace) -> int:
@@ -265,19 +280,46 @@ def cmd_set_export(args: argparse.Namespace) -> int:
 
 def cmd_engine_validate(args: argparse.Namespace) -> int:
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
-    return run_engine_validate(project)
+    return run_engine_validate(project, quiet=args.quiet)
 
 
 def cmd_engine_preview(args: argparse.Namespace) -> int:
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
-    return run_engine_preview(project, seconds=args.seconds)
+    return run_engine_preview(project, seconds=args.seconds, quiet=args.quiet)
 
 
 def cmd_engine_render_final(args: argparse.Namespace) -> int:
     if args.confirm != "RENDER_FINAL":
         raise ValueError('Para render final debes pasar --confirm "RENDER_FINAL".')
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
-    return run_engine_render_final(project)
+    return run_engine_render_final(project, quiet=args.quiet)
+
+
+def open_path(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"No existe ruta para abrir: {path}")
+    subprocess.Popen(
+        ["powershell", "-NoProfile", "-Command", "Start-Process", "-LiteralPath", str(path)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def cmd_open_output(args: argparse.Namespace) -> int:
+    project = load_project(args.project, Path(args.app_data) if args.app_data else None)
+    output_dir = Path(project["export"]["output_dir"])
+    target = output_dir / args.subdir if args.subdir else output_dir
+    open_path(target)
+    print(f"Abriendo: {target}")
+    return 0
+
+
+def cmd_open_project_data(args: argparse.Namespace) -> int:
+    project = load_project(args.project, Path(args.app_data) if args.app_data else None)
+    target = Path(project["workspace"]["project_data_dir"])
+    open_path(target)
+    print(f"Abriendo: {target}")
+    return 0
 
 
 def cmd_validate_project(args: argparse.Namespace) -> int:
@@ -393,17 +435,29 @@ def build_parser() -> argparse.ArgumentParser:
 
     engine_validate = subparsers.add_parser("engine-validate")
     engine_validate.add_argument("--project", required=True)
+    engine_validate.add_argument("--quiet", action="store_true")
     engine_validate.set_defaults(func=cmd_engine_validate)
 
     engine_preview = subparsers.add_parser("engine-preview")
     engine_preview.add_argument("--project", required=True)
     engine_preview.add_argument("--seconds", type=int, default=10)
+    engine_preview.add_argument("--quiet", action="store_true")
     engine_preview.set_defaults(func=cmd_engine_preview)
 
     engine_render = subparsers.add_parser("engine-render-final")
     engine_render.add_argument("--project", required=True)
     engine_render.add_argument("--confirm", required=True, help='Debe ser exactamente "RENDER_FINAL".')
+    engine_render.add_argument("--quiet", action="store_true")
     engine_render.set_defaults(func=cmd_engine_render_final)
+
+    open_output = subparsers.add_parser("open-output")
+    open_output.add_argument("--project", required=True)
+    open_output.add_argument("--subdir", choices=["previews", "final", "data", "frames"])
+    open_output.set_defaults(func=cmd_open_output)
+
+    open_project_data = subparsers.add_parser("open-project-data")
+    open_project_data.add_argument("--project", required=True)
+    open_project_data.set_defaults(func=cmd_open_project_data)
 
     validate = subparsers.add_parser("validate-project")
     validate.add_argument("--project", required=True)
