@@ -12,7 +12,7 @@ video_start_local = datetime(2026, 6, 28, 10, 37, 0)
 
 # ===== Layout base =====
 M = 40   # margen uniforme contra borde
-G = 35   # separación uniforme entre paneles
+G = 35   # uniform spacing between panels
 
 def load_font(size):
     candidates = [
@@ -62,17 +62,17 @@ track_soft = (255, 255, 255, 180)
 accent = (0, 220, 255, 255)
 accent2 = (255, 80, 80, 255)
 
-# ===== Fecha / Hora =====
+# ===== Date / Time =====
 current_dt = video_start_local + timedelta(seconds=target_second)
 fecha_txt = current_dt.strftime("%d/%m/%Y")
-hora_txt = current_dt.strftime("%H:%M")
+time_txt = current_dt.strftime("%H:%M")
 
 date_x = M
 date_y = M
 draw.text((date_x, date_y), fecha_txt, font=font_date, fill=text_main)
-draw.text((date_x, date_y + 44), hora_txt, font=font_time, fill=text_main)
+draw.text((date_x, date_y + 44), time_txt, font=font_time, fill=text_main)
 
-# ===== Ruta =====
+# ===== Route =====
 route_w = 600
 route_h = 320
 route_x = W - M - route_w
@@ -128,7 +128,7 @@ min_bbox = draw.textbbox((0,0), min_txt, font=font_small)
 min_w = min_bbox[2] - min_bbox[0]
 draw.text((panel_center_x - min_w/2, bar_y2 + 12), min_txt, font=font_small, fill=text_main)
 
-# ===== Panel velocímetro compacto, centrado como un solo bloque =====
+# ===== Compact speedometer panel, centered as a single block =====
 speed_panel_x = M
 speed_panel_y = 165
 speed_panel_w = 430
@@ -144,7 +144,7 @@ max_speed_scale = 8.0
 speed = current["VelocidadKmh"]
 speed_ratio = max(0.0, min(speed / max_speed_scale, 1.0))
 
-# grupo completo: velocímetro + label
+# full group: speedometer + label
 group_center_x = speed_panel_x + (speed_panel_w // 2)
 group_center_y = speed_panel_y + (speed_panel_h // 2)
 
@@ -212,7 +212,7 @@ max_bbox2 = draw.textbbox((0,0), max_txt2, font=font_small)
 max_w2 = max_bbox2[2] - max_bbox2[0]
 draw.text((track_x2 - max_w2, dist_y + 62), max_txt2, font=font_small, fill=text_main)
 
-# ===== Ruta dibujo =====
+# ===== Route dibujo =====
 pad = 35
 lats = [r["Latitud"] for r in rows]
 lons = [r["Longitud"] for r in rows]
@@ -237,6 +237,8 @@ draw.ellipse((px-11, py-11, px+11, py+11), fill=accent2)
 
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 

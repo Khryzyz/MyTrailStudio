@@ -25,11 +25,11 @@ def validate_config(config, root):
         try:
             tz = ZoneInfo(tz_name)
         except Exception:
-            errors.append("input.timezone no es valido o no esta disponible en este Python. Usa America/Bogota o UTC.")
+            errors.append("input.timezone is invalid or unavailable in this Python. Use America/Bogota or UTC.")
             tz = timezone(timedelta(hours=-5))
 
     if config["input"]["video_mode"] not in ["normal", "hyperlapse"]:
-        errors.append("input.video_mode debe ser normal|hyperlapse.")
+        errors.append("input.video_mode must be normal|hyperlapse.")
 
     try:
         config["input"]["hyperlapse_speed"] = parse_float_range(
@@ -42,10 +42,10 @@ def validate_config(config, root):
         errors.append(str(e))
 
     if config["output"]["resolution"] not in RESOLUTION_MAP:
-        errors.append("output.resolution debe ser 1080p|2k|4k.")
+        errors.append("output.resolution must be 1080p|2k|4k.")
 
     if config["output"]["fps"] not in [15, 30, 60]:
-        errors.append("output.fps debe ser 15|30|60.")
+        errors.append("output.fps must be 15|30|60.")
 
     try:
         config["output"]["hyperlapse_speed"] = parse_float_range(
@@ -58,17 +58,17 @@ def validate_config(config, root):
         errors.append(str(e))
 
     if not isinstance(config["output"].get("resume"), bool):
-        errors.append("output.resume debe ser true|false.")
+        errors.append("output.resume must be true|false.")
 
     if not isinstance(config["output"].get("cleanup_after_render"), bool):
-        errors.append("output.cleanup_after_render debe ser true|false.")
+        errors.append("output.cleanup_after_render must be true|false.")
 
     transition = config["output"].get("transition", {})
     if not isinstance(transition.get("add"), bool):
-        errors.append("output.transition.add debe ser true|false.")
+        errors.append("output.transition.add must be true|false.")
 
     if transition.get("type") not in ["fade_black"]:
-        errors.append("output.transition.type debe ser fade_black.")
+        errors.append("output.transition.type must be fade_black.")
 
     try:
         transition["time"] = parse_float_1(transition.get("time"), "output.transition.time")
@@ -76,45 +76,45 @@ def validate_config(config, root):
         errors.append(str(e))
 
     if isinstance(transition.get("time"), (int, float)) and transition["time"] <= 0:
-        errors.append("output.transition.time debe ser mayor que 0.")
+        errors.append("output.transition.time must be greater than 0.")
 
     preview_time = config["output"]["preview"]["time"]
     if not isinstance(preview_time, int) or preview_time < 1 or preview_time > 60:
-        errors.append("output.preview.time debe ser entero entre 1 y 60.")
+        errors.append("output.preview.time must be an integer between 1 and 60.")
 
     closing_time = config["output"]["closing_screen"]["time"]
     if not isinstance(closing_time, int) or closing_time < 1 or closing_time > 5:
-        errors.append("output.closing_screen.time debe ser entero entre 1 y 5.")
+        errors.append("output.closing_screen.time must be an integer between 1 and 5.")
 
     if not config["output"]["closing_screen"]["message"]:
-        config["output"]["closing_screen"]["message"] = "Ruta Finalizada"
+        config["output"]["closing_screen"]["message"] = "Route Completed"
 
     if config["setting"]["layout"]["theme"] not in ["sport"]:
-        errors.append("setting.layout.theme solo admite sport por ahora.")
+        errors.append("setting.layout.theme only supports sport for now.")
 
     overlay_fps = config["setting"]["layout"]["overlay_fps"]
     if not isinstance(overlay_fps, int) or overlay_fps < 1 or overlay_fps > 60:
-        errors.append("setting.layout.overlay_fps debe ser entero entre 1 y 60.")
+        errors.append("setting.layout.overlay_fps must be an integer between 1 and 60.")
 
     performance = config["setting"].get("performance", {})
     frame_workers = performance.get("frame_workers")
     ffmpeg_threads = performance.get("ffmpeg_threads")
 
     if not isinstance(frame_workers, int) or frame_workers < 0 or frame_workers > 64:
-        errors.append("setting.performance.frame_workers debe ser entero entre 0 y 64. Usa 0 para automatico.")
+        errors.append("setting.performance.frame_workers must be an integer between 0 and 64. Use 0 for automatic.")
 
     if not isinstance(ffmpeg_threads, int) or ffmpeg_threads < 0 or ffmpeg_threads > 64:
-        errors.append("setting.performance.ffmpeg_threads debe ser entero entre 0 y 64. Usa 0 para automatico.")
+        errors.append("setting.performance.ffmpeg_threads must be an integer between 0 and 64. Use 0 for automatic.")
 
     video_overrides = config.get("video_overrides", {})
     if not isinstance(video_overrides, dict):
-        errors.append("video_overrides debe ser un objeto JSON.")
+        errors.append("video_overrides must be a JSON object.")
     else:
         for name, override in video_overrides.items():
             if not isinstance(override, dict):
-                errors.append(f"video_overrides.{name} debe ser un objeto JSON.")
+                errors.append(f"video_overrides.{name} must be a JSON object.")
             elif "creation_time" in override and not isinstance(override["creation_time"], str):
-                errors.append(f"video_overrides.{name}.creation_time debe ser texto ISO, por ejemplo 2026-06-28T16:33:40Z.")
+                errors.append(f"video_overrides.{name}.creation_time must be ISO text, for example 2026-06-28T16:33:40Z.")
 
     videos_dir = resolve_path(root, config["input"]["videos_dir"])
     gpx_dir = resolve_path(root, config["input"]["gpx_dir"])
@@ -130,21 +130,21 @@ def validate_config(config, root):
     if video_files:
         for video_path in video_files:
             if not os.path.isfile(video_path):
-                errors.append(f"input.video_files no existe: {video_path}")
+                errors.append(f"input.video_files does not exist: {video_path}")
     elif not os.path.isdir(videos_dir):
-        errors.append(f"input.videos_dir no existe: {videos_dir}")
+        errors.append(f"input.videos_dir does not exist: {videos_dir}")
 
     if gpx_path:
         if not os.path.isfile(gpx_path):
-            errors.append(f"input.gpx_path no existe: {gpx_path}")
+            errors.append(f"input.gpx_path does not exist: {gpx_path}")
     elif not os.path.isdir(gpx_dir):
-        errors.append(f"input.gpx_dir no existe: {gpx_dir}")
+        errors.append(f"input.gpx_dir does not exist: {gpx_dir}")
 
     if not os.path.isdir(output_dir):
-        errors.append(f"output.dir no existe: {output_dir}")
+        errors.append(f"output.dir does not exist: {output_dir}")
 
     if not os.path.exists(font_path):
-        warnings.append(f"No se encontro fuente personalizada, se usara fallback: {font_path}")
+        warnings.append(f"Custom font not found, fallback will be used: {font_path}")
 
     return errors, warnings, tz, {
         "videos_dir": videos_dir,
@@ -186,23 +186,23 @@ def print_validate_only_summary(manifest):
 
     print("")
     print("===== VALIDATE ONLY / DRY RUN =====")
-    print("Videos detectados:", len(videos))
+    print("Detected videos:", len(videos))
     for idx, video in enumerate(videos, start=1):
         print(f"  {idx}. {video['name']}")
-        print("     Inicio:", video["start_local"])
-        print("     Fin real:", video["real_end_local"])
+        print("     Start:", video["start_local"])
+        print("     Real end:", video["real_end_local"])
         print("     GPS:", video["gps_status"])
-    print("GPX usado:", manifest["gpx"]["name"])
-    print("Duracion total archivos:", str(timedelta(seconds=round(input_file_seconds))))
-    print("Duracion real total:", str(timedelta(seconds=round(input_real_seconds))))
-    print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
-    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
-    print("Factor tecnico FFmpeg:", round(ffmpeg_output_speed_factor(config), 6), "x")
-    print("Frames estimados:", estimated_frames)
-    print("Resolucion final:", config["output"]["resolution"])
-    print("FPS final:", config["output"]["fps"])
-    print("Archivo final esperado:", final_output_path(manifest))
-    print("No se generaron frames ni videos.")
+    print("GPX used:", manifest["gpx"]["name"])
+    print("Total file duration:", str(timedelta(seconds=round(input_file_seconds))))
+    print("Total real duration:", str(timedelta(seconds=round(input_real_seconds))))
+    print("Estimated final duration:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Desired final speed:", config["output"]["hyperlapse_speed"], "x")
+    print("Technical FFmpeg factor:", round(ffmpeg_output_speed_factor(config), 6), "x")
+    print("Estimated frames:", estimated_frames)
+    print("Final resolution:", config["output"]["resolution"])
+    print("Final FPS:", config["output"]["fps"])
+    print("Expected final file:", final_output_path(manifest))
+    print("No frames or videos were generated.")
 
 
 def main():
@@ -222,12 +222,12 @@ def main():
 
     if errors:
         print("")
-        print("ERRORES DE CONFIGURACION:")
+        print("CONFIGURATION ERRORS:")
         for e in errors:
             print(" -", e)
         sys.exit(1)
 
-    print("CONFIGURACION RESUELTA")
+    print("RESOLVED CONFIGURATION")
     print("Input videos:", paths["video_files"] if paths["video_files"] else paths["videos_dir"])
     print("Input GPX:", paths["gpx_path"] if paths["gpx_path"] else paths["gpx_dir"])
     print("Output:", paths["output_dir"])
@@ -262,26 +262,26 @@ def main():
         ])
 
     if not videos:
-        raise Exception("No hay videos MP4/MOV en input.videos_dir.")
+        raise Exception("No MP4/MOV videos found in input.videos_dir.")
 
     if not gpx_files:
-        raise Exception("No hay GPX en input.gpx_dir.")
+        raise Exception("No GPX files found in input.gpx_dir.")
 
     if len(gpx_files) > 1:
         names = ", ".join(os.path.basename(p) for p in gpx_files)
-        raise Exception(f"Hay mas de un GPX en input.gpx_dir. Deja solo uno por ejecucion. GPX encontrados: {names}")
+        raise Exception(f"More than one GPX found in input.gpx_dir. Leave only one per run. GPX files: {names}")
 
     gpx_path = gpx_files[0]
     gpx = read_gpx(gpx_path)
 
     print("")
-    print("===== VALIDACION TECNICA =====")
+    print("===== TECHNICAL VALIDATION =====")
     print("")
-    print("GPX usado:", os.path.basename(gpx_path))
-    print("Puntos GPX:", gpx["count"])
-    print("Inicio GPX:", fmt(gpx["start"], tz))
-    print("Fin GPX:", fmt(gpx["end"], tz))
-    print("Duracion GPX:", str(gpx["end"] - gpx["start"]))
+    print("GPX used:", os.path.basename(gpx_path))
+    print("GPX points:", gpx["count"])
+    print("GPX start:", fmt(gpx["start"], tz))
+    print("GPX end:", fmt(gpx["end"], tz))
+    print("GPX duration:", str(gpx["end"] - gpx["start"]))
     print("")
 
     video_results = []
@@ -305,26 +305,26 @@ def main():
         analysis = analyze_video(video, gpx, config["input"]["video_mode"], config["input"]["hyperlapse_speed"])
 
         print("Video:", video["name"])
-        print("  Resolucion:", f'{video["width"]}x{video["height"]}')
-        print("  FPS original:", video["fps_raw"] or "SIN FPS")
-        print("  Inicio:", fmt(video["start"], tz))
-        print("  Fuente inicio:", video["start_source"])
-        print("  Fin archivo:", fmt(video["end"], tz))
-        print("  Fin real segun modo:", fmt(analysis["real_end"], tz))
-        print("  Duracion archivo:", str(timedelta(seconds=round(video["duration_seconds"]))))
-        print("  Duracion real:", str(timedelta(seconds=round(analysis["real_duration_seconds"] or 0))))
-        print("  Estado GPS:", analysis["status"])
+        print("  Resolution:", f'{video["width"]}x{video["height"]}')
+        print("  Original FPS:", video["fps_raw"] or "SIN FPS")
+        print("  Start:", fmt(video["start"], tz))
+        print("  Start source:", video["start_source"])
+        print("  File end:", fmt(video["end"], tz))
+        print("  Real end by mode:", fmt(analysis["real_end"], tz))
+        print("  File duration:", str(timedelta(seconds=round(video["duration_seconds"]))))
+        print("  Real duration:", str(timedelta(seconds=round(analysis["real_duration_seconds"] or 0))))
+        print("  GPS status:", analysis["status"])
 
         if video["width"] and video["height"]:
             if video["width"] < target_w or video["height"] < target_h:
                 raise Exception(
-                    f'La resolucion de salida {config["output"]["resolution"]} '
-                    f'es mayor que el video {video["name"]} ({video["width"]}x{video["height"]}).'
+                    f'The output resolution {config["output"]["resolution"]} '
+                    f'is larger than video {video["name"]} ({video["width"]}x{video["height"]}).'
                 )
 
         if analysis["status"] == "GPX_PARCIAL":
-            print("  Sin GPS al inicio:", analysis["missing_before_seconds"], "seg")
-            print("  Sin GPS al final:", analysis["missing_after_seconds"], "seg")
+            print("  No GPS at start:", analysis["missing_before_seconds"], "seg")
+            print("  No GPS at end:", analysis["missing_after_seconds"], "seg")
 
         print("")
 
@@ -383,22 +383,24 @@ def main():
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
 
-    print("Manifest creado:")
+    print("Manifest created:")
     print(manifest_path)
     if known.validate_only:
         print_validate_only_summary(manifest)
     print("")
-    print("Validacion tecnica OK.")
+    print("Technical validation OK.")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Operacion cancelada.")
+        print("Operation canceled.")
         sys.exit(130)
     except Exception as e:
         print("")
         print("ERROR:")
         print(f" - {e}")
         sys.exit(1)
+
+
 

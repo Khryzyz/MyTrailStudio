@@ -35,7 +35,7 @@ def read_gpx(gpx_path):
     points.sort(key=lambda x: x["time"])
 
     if not points:
-        raise Exception("El GPX no tiene puntos trkpt con hora valida.")
+        raise Exception("The GPX has no trkpt points with valid time.")
 
     return {
         "path": gpx_path,
@@ -137,3 +137,5 @@ def sample_at(points, target_time):
     base = points[-1].copy()
     base["gps_available"] = False
     return base
+
+

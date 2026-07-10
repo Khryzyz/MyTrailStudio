@@ -21,7 +21,7 @@ def is_inside(root, path):
 
 def require_safe_target(root, path):
     if not is_inside(root, path):
-        raise Exception(f"Ruta fuera del proyecto. No se limpia: {path}")
+        raise Exception(f"Path outside project. Not cleaning: {path}")
 
     root_abs = normalize(root)
     path_abs = normalize(path)
@@ -37,43 +37,43 @@ def require_safe_target(root, path):
     }
 
     if path_abs in protected:
-        raise Exception(f"Ruta protegida. No se limpia: {path}")
+        raise Exception(f"Protected path. Not cleaning: {path}")
 
 
 def remove_file(root, path):
     require_safe_target(root, path)
     if not os.path.exists(path):
-        print("No existe:", path)
+        print("Does not exist:", path)
         return
     if os.path.isdir(path):
-        raise Exception(f"Se esperaba archivo, no carpeta: {path}")
+        raise Exception(f"Expected file, not folder: {path}")
     os.remove(path)
-    print("Eliminado archivo:", path)
+    print("Deleted file:", path)
 
 
 def remove_dir(root, path):
     require_safe_target(root, path)
     if not os.path.exists(path):
-        print("No existe:", path)
+        print("Does not exist:", path)
         return
     if not os.path.isdir(path):
-        raise Exception(f"Se esperaba carpeta, no archivo: {path}")
+        raise Exception(f"Expected folder, not file: {path}")
     shutil.rmtree(path)
-    print("Eliminada carpeta:", path)
+    print("Deleted folder:", path)
 
 
 def cleanup_auto_after_render(root):
     print("")
-    print("Limpieza automatica posterior al render...")
+    print("Automatic cleanup after render...")
     remove_dir(root, os.path.join(root, "output", "frames"))
     remove_dir(root, os.path.join(root, "output", "data"))
     remove_dir(root, os.path.join(root, "temp"))
-    print("Limpieza automatica OK.")
+    print("Automatic cleanup OK.")
 
 
 def cleanup_manual(root):
     print("")
-    print("Limpieza manual del proyecto...")
+    print("Manual project cleanup...")
 
     input_dir = os.path.join(root, "input")
     require_safe_target(root, input_dir)
@@ -84,14 +84,14 @@ def cleanup_manual(root):
             if os.path.isfile(path) and os.path.splitext(name)[1].lower() in INPUT_CLEAN_EXTENSIONS:
                 remove_file(root, path)
     else:
-        print("No existe:", input_dir)
+        print("Does not exist:", input_dir)
 
     remove_dir(root, os.path.join(root, "output", "frames"))
     remove_dir(root, os.path.join(root, "output", "previews"))
     remove_dir(root, os.path.join(root, "output", "final"))
     remove_dir(root, os.path.join(root, "output", "data"))
     remove_dir(root, os.path.join(root, "temp"))
-    print("Limpieza manual OK.")
+    print("Manual cleanup OK.")
 
 
 def main():
@@ -102,7 +102,7 @@ def main():
 
     root = os.path.abspath(args.root)
     if not os.path.isdir(root):
-        raise Exception(f"No existe root del proyecto: {root}")
+        raise Exception(f"Project root does not exist: {root}")
 
     if args.mode == "manual":
         cleanup_manual(root)
@@ -112,5 +112,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 
 

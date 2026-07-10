@@ -95,3 +95,5 @@ def summarize_timeline_gaps(project: dict[str, Any]) -> list[dict[str, Any]]:
             })
     return [gap for gap in gaps if gap["seconds"] > 0]
 
+
+

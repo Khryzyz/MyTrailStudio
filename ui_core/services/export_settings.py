@@ -18,19 +18,19 @@ def update_export_settings(project: dict[str, Any], updates: dict[str, Any]) -> 
 
     if "resolution" in updates and updates["resolution"] is not None:
         if updates["resolution"] not in VALID_RESOLUTIONS:
-            raise ValueError("resolution debe ser 1080p, 2k o 4k.")
+            raise ValueError("resolution must be 1080p, 2k, or 4k.")
         export["resolution"] = updates["resolution"]
 
     if "fps" in updates and updates["fps"] is not None:
         fps = int(updates["fps"])
         if fps not in VALID_FPS:
-            raise ValueError("fps debe ser 15, 30 o 60.")
+            raise ValueError("fps must be 15, 30, or 60.")
         export["fps"] = fps
 
     if "output_hyperlapse_speed" in updates and updates["output_hyperlapse_speed"] is not None:
         speed = float(updates["output_hyperlapse_speed"])
         if speed < 0.1 or speed > 50.0:
-            raise ValueError("output_hyperlapse_speed debe estar entre 0.1 y 50.0.")
+            raise ValueError("output_hyperlapse_speed must be between 0.1 y 50.0.")
         export["output_hyperlapse_speed"] = speed
 
     if "remove_audio" in updates and updates["remove_audio"] is not None:
@@ -52,10 +52,12 @@ def update_export_settings(project: dict[str, Any], updates: dict[str, Any]) -> 
     if "closing_seconds" in updates and updates["closing_seconds"] is not None:
         seconds = int(updates["closing_seconds"])
         if seconds < 1 or seconds > 5:
-            raise ValueError("closing_seconds debe estar entre 1 y 5.")
+            raise ValueError("closing_seconds must be between 1 y 5.")
         export["closing_screen"]["seconds"] = seconds
 
     touch_project(project)
     save_project(project)
     return export
+
+
 

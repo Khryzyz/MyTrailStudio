@@ -91,7 +91,7 @@ def run_engine_validate(project: dict[str, Any], quiet: bool = False) -> int:
 
 def run_engine_preview(project: dict[str, Any], seconds: int = 10, quiet: bool = False) -> int:
     if seconds < 1 or seconds > 60:
-        raise ValueError("La preview debe estar entre 1 y 60 segundos.")
+        raise ValueError("Preview must be between 1 and 60 seconds.")
 
     engine_root = resolve_engine_root(project["workspace"].get("engine_root"))
     config_path = build_engine_config(project, overrides={
@@ -124,7 +124,7 @@ def run_engine_preview(project: dict[str, Any], seconds: int = 10, quiet: bool =
         return validate_code
 
     if not manifest_path.exists():
-        raise FileNotFoundError(f"No se encontro manifest despues de validar: {manifest_path}")
+        raise FileNotFoundError(f"Manifest not found after validation: {manifest_path}")
 
     project["engine"]["last_manifest_path"] = str(manifest_path)
     touch_project(project)
@@ -176,7 +176,7 @@ def run_engine_render_final(project: dict[str, Any], quiet: bool = False) -> int
         return validate_code
 
     if not manifest_path.exists():
-        raise FileNotFoundError(f"No se encontro manifest despues de validar: {manifest_path}")
+        raise FileNotFoundError(f"Manifest not found after validation: {manifest_path}")
 
     project["engine"]["last_manifest_path"] = str(manifest_path)
     touch_project(project)
@@ -195,3 +195,5 @@ def run_engine_render_final(project: dict[str, Any], quiet: bool = False) -> int
     if quiet:
         print(f"Log: {render_log_path}")
     return code
+
+

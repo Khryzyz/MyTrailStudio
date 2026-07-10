@@ -33,7 +33,7 @@ def validate_project(project: dict[str, Any]) -> dict[str, Any]:
     videos = project["assets"].get("videos", [])
 
     if not videos:
-        warnings.append("El proyecto no tiene videos agregados.")
+        warnings.append("The project has no videos.")
 
     for video in videos:
         manual_start = parse_dt(video.get("manual_creation_time_utc"))
@@ -69,11 +69,11 @@ def validate_project(project: dict[str, Any]) -> dict[str, Any]:
         video["missing_after_seconds"] = analysis["missing_after_seconds"]
 
         if analysis["status"] == "SIN_HORA_VIDEO":
-            warnings.append(f"{video['name']}: no tiene fecha valida; requiere fecha/hora manual.")
+            warnings.append(f"{video['name']}: has no valid date; manual date/time is required.")
         elif analysis["status"] == "FUERA_DEL_GPX":
-            warnings.append(f"{video['name']}: queda fuera del rango del GPX.")
+            warnings.append(f"{video['name']}: is outside the GPX range.")
         elif analysis["status"] == "GPX_PARCIAL":
-            warnings.append(f"{video['name']}: cubre parcialmente el rango del GPX.")
+            warnings.append(f"{video['name']}: partially covers the GPX range.")
 
     project["timelines"] = build_timelines(videos)
     gaps = summarize_timeline_gaps(project)
@@ -91,3 +91,5 @@ def validate_project(project: dict[str, Any]) -> dict[str, Any]:
     touch_project(project)
     save_project(project)
     return report
+
+

@@ -1,117 +1,117 @@
 # CLI Workflow
 
-Guia de comandos para la capa `ui_core`.
+Command guide for the `ui_core` layer.
 
-Ejecuta los comandos desde la raiz del engine:
+Run commands from the engine root:
 
 ```powershell
 cd J:\Fotos\MyTrailStudio
 ```
 
-## Ayuda
+## Help
 
 ```powershell
 .\mts.ps1 --help
 ```
 
-## Proyectos
+## Projects
 
-Por defecto, los proyectos viven en `%APPDATA%\MyTrailStudio\projects`. Si necesitas usar una carpeta de proyectos anterior o portable, agrega `--app-data "RUTA"` antes del subcomando.
+By default, projects live in `%APPDATA%\MyTrailStudio\projects`. If you need to use an older or portable project folder, add `--app-data "PATH"` before the subcommand.
 
-Listar proyectos:
+List projects:
 
 ```powershell
 .\mts.ps1 list-projects
 ```
 
-Crear proyecto:
+Create project:
 
 ```powershell
-.\mts.ps1 create-project --name "Mi Ruta" --gpx "E:\Ruta\track.gpx" --output "E:\Ruta\salida"
+.\mts.ps1 create-project --name "My Route" --gpx "E:\Route\track.gpx" --output "E:\Route\output"
 ```
 
-Inspeccionar JSON completo:
+Inspect full JSON:
 
 ```powershell
 .\mts.ps1 inspect-project --project "<project-id>"
 ```
 
-Resumen legible:
+Readable summary:
 
 ```powershell
 .\mts.ps1 project-summary --project "<project-id>"
 ```
 
-Borrar proyecto centralizado:
+Delete centralized project:
 
 ```powershell
 .\mts.ps1 delete-project --project "<project-id>" --confirm "<project-id>"
 ```
 
-Esto no borra GPX, videos ni audios originales.
+This does not delete original GPX, videos, or audio files.
 
 ## Videos
 
-Los videos pueden venir de cualquier camara siempre que sean MP4/MOV y tengan una fecha de creacion util. La CLI usa primero `creation_time` de metadata y, si no existe, la fecha de creacion del archivo.
+Videos can come from any camera as long as they are MP4/MOV and have a usable creation date. The CLI first uses metadata `creation_time`; if missing, it uses the file creation date.
 
-Agregar un video:
-
-```powershell
-.\mts.ps1 add-video --project "<project-id>" --video "E:\Ruta\VIDEO_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
-```
-
-Agregar carpeta completa:
+Add one video:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-video --project "<project-id>" --video "E:\Route\VIDEO_0001.MP4" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
-Por defecto, `add-videos-dir` omite:
-
-- videos duplicados
-- videos fuera del rango GPX
-
-Para incluir videos fuera del GPX a proposito:
+Add a full folder:
 
 ```powershell
-.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0 --include-out-of-gpx
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Route" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
-Quitar video del proyecto:
+By default, `add-videos-dir` skips:
+
+- duplicate videos
+- videos outside the GPX range
+
+To intentionally include videos outside the GPX range:
+
+```powershell
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Route" --mode hyperlapse --hyperlapse-speed 2.0 --include-out-of-gpx
+```
+
+Remove video from the project:
 
 ```powershell
 .\mts.ps1 remove-video --project "<project-id>" --video "VIDEO_0001.MP4"
 ```
 
-Asignar fecha manual a un video sin metadata valida:
+Assign manual time to a video with invalid metadata:
 
 ```powershell
 .\mts.ps1 set-video-time --project "<project-id>" --video "VIDEO_0001.MP4" --time "2026-06-13T13:18:14Z"
 ```
 
-## Validacion
+## Validation
 
-Validacion de proyecto:
+Project validation:
 
 ```powershell
 .\mts.ps1 validate-project --project "<project-id>"
 ```
 
-Validacion tecnica del motor:
+Engine technical validation:
 
 ```powershell
 .\mts.ps1 engine-validate --project "<project-id>" --quiet
 ```
 
-## Exportacion
+## Export
 
-Configurar salida:
+Configure output:
 
 ```powershell
-.\mts.ps1 set-export --project "<project-id>" --resolution 1080p --fps 30 --output-speed 3.5 --remove-audio --single-final-video --transitions --closing --closing-message "Ruta Finalizada" --closing-seconds 3
+.\mts.ps1 set-export --project "<project-id>" --resolution 1080p --fps 30 --output-speed 3.5 --remove-audio --single-final-video --transitions --closing --closing-message "Route Completed" --closing-seconds 3
 ```
 
-Opciones utiles:
+Useful options:
 
 ```powershell
 --resolution 1080p|2k|4k
@@ -129,33 +129,33 @@ Opciones utiles:
 .\mts.ps1 engine-preview --project "<project-id>" --seconds 10 --quiet
 ```
 
-Salida esperada:
+Expected output:
 
 ```text
 <output-dir>\previews
 ```
 
-## Render Final
+## Final Render
 
 ```powershell
 .\mts.ps1 engine-render-final --project "<project-id>" --confirm "RENDER_FINAL" --quiet
 ```
 
-Salida esperada:
+Expected output:
 
 ```text
 <output-dir>\final
 ```
 
-## Apertura Rapida
+## Quick Open
 
-Abrir carpeta de salida:
+Open output folder:
 
 ```powershell
 .\mts.ps1 open-output --project "<project-id>"
 ```
 
-Abrir subcarpetas:
+Open subfolders:
 
 ```powershell
 .\mts.ps1 open-output --project "<project-id>" --subdir previews
@@ -163,40 +163,34 @@ Abrir subcarpetas:
 .\mts.ps1 open-output --project "<project-id>" --subdir data
 ```
 
-Abrir carpeta interna del proyecto:
+Open internal project data:
 
 ```powershell
 .\mts.ps1 open-project-data --project "<project-id>"
 ```
 
-## Prueba Integral
+## Integral Test
 
-Sin render final:
+Without final render:
 
 ```powershell
 .\run_mts_integral_test.ps1 -ProjectId "<project-id>"
 ```
 
-Con render final:
+With final render:
 
 ```powershell
 .\run_mts_integral_test.ps1 -ProjectId "<project-id>" -RunFinalRender
 ```
 
-Parametros opcionales:
+Optional parameters:
 
 ```powershell
 -Resolution 1080p
 -Fps 30
 -OutputSpeed 3.5
 -PreviewSeconds 10
--ClosingMessage "Ruta Finalizada"
+-ClosingMessage "Route Completed"
 -ClosingSeconds 3
 ```
-
-
-
-
-
-
 

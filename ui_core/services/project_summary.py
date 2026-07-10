@@ -113,3 +113,5 @@ def build_project_summary(project: dict[str, Any]) -> dict[str, Any]:
             "videos_real": seconds_to_hms(total_real_seconds),
         },
     }
+
+

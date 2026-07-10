@@ -18,3 +18,5 @@ def resolve_app_data_dir(value: str | None = None) -> Path:
     return Path(value).expanduser().resolve() if value else default_app_data_dir()
 
 
+
+

@@ -27,12 +27,12 @@ def main():
     config = manifest["config"]
 
     if not config["output"]["preview"]["add"]:
-        print("Preview desactivado. No se genera preview.")
+        print("Preview disabled. No preview generated.")
         return
 
     preview_time = int(config["output"]["preview"]["time"])
     if preview_time < 1 or preview_time > 60:
-        raise Exception("La preview debe estar entre 1 y 60 segundos.")
+        raise Exception("Preview must be between 1 and 60 seconds.")
 
     overlay_fps = int(config["setting"]["layout"]["overlay_fps"])
     closing_add = bool(config["output"]["closing_screen"]["add"])
@@ -85,12 +85,12 @@ def main():
     total_frames = animated_frames + closing_frames
 
     print("")
-    print("Generando preview...")
+    print("Generating preview...")
     print("Frames:", total_frames)
-    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
-    print("Factor tecnico FFmpeg:", round(output_speed_factor, 6), "x")
-    print("Carpeta:", frames_dir)
-    print("Salida:", preview_out)
+    print("Desired final speed:", config["output"]["hyperlapse_speed"], "x")
+    print("Technical FFmpeg factor:", round(output_speed_factor, 6), "x")
+    print("Folder:", frames_dir)
+    print("Output:", preview_out)
     print("")
 
     frame_tasks = []
@@ -107,7 +107,7 @@ def main():
             frame_tasks.append((frame, "closing", None, out))
 
     render_frames_parallel(W, H, config, gpx_points, font_path, frame_tasks, "Frames preview", route_name, stats)
-    print("Frames preview creados.")
+    print("Preview frames created.")
 
     target_resolution = config["output"]["resolution"]
     target_scale = {
@@ -133,12 +133,14 @@ def main():
     ]
 
     print("")
-    print("Generando MP4 preview...")
+    print("Generating preview MP4...")
     subprocess.run(ffmpeg_cmd, check=True)
 
     print("")
-    print("Preview creado:")
+    print("Preview created:")
     print(preview_out)
 
 if __name__ == "__main__":
     main()
+
+

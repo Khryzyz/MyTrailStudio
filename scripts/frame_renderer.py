@@ -57,7 +57,7 @@ def render_frames_parallel(W, H, config, gpx_points, font_path, tasks, progress_
         pending_tasks = [task for task in tasks if not frame_exists(task[3])]
         skipped = len(tasks) - len(pending_tasks)
         if skipped:
-            print("Frames existentes reutilizados:", skipped)
+            print("Existing frames reused:", skipped)
         tasks = pending_tasks
 
     workers = resolve_worker_count(config["setting"]["performance"].get("frame_workers", 0))
@@ -91,3 +91,5 @@ def render_frames_parallel(W, H, config, gpx_points, font_path, tasks, progress_
                 print(f"\r{progress_label}: {completed}/{total_frames} ({pct:.1f}%)", end="")
 
     print("")
+
+

@@ -36,7 +36,7 @@ DEFAULT_CONFIG = {
         },
         "closing_screen": {
             "add": False,
-            "message": "Ruta Finalizada",
+            "message": "Route Completed",
             "time": 3
         }
     },
@@ -132,36 +132,36 @@ def parse_bool(value):
     if isinstance(value, bool):
         return value
     v = str(value).strip().lower()
-    if v in ["true", "1", "yes", "y", "si", "sí"]:
+    if v in ["true", "1", "yes", "y"]:
         return True
     if v in ["false", "0", "no", "n"]:
         return False
-    raise ValueError(f"Valor booleano invalido: {value}")
+    raise ValueError(f"Invalid boolean value: {value}")
 
 
 def parse_float_1(value, name):
     text = str(value).strip()
     if not re.fullmatch(r"\d+(\.\d)?", text):
-        raise ValueError(f"{name} debe ser float con maximo 1 decimal. Valor recibido: {value}")
+        raise ValueError(f"{name} must be a float with at most 1 decimal place. Received: {value}")
     return float(text)
 
 
 def parse_float_value(value, name):
     if value is None or isinstance(value, bool):
-        raise ValueError(f"{name} debe ser float. Valor recibido: {value}")
+        raise ValueError(f"{name} must be a float. Received: {value}")
     try:
         result = float(str(value).strip())
     except Exception:
-        raise ValueError(f"{name} debe ser float. Valor recibido: {value}")
+        raise ValueError(f"{name} must be a float. Received: {value}")
     if not math.isfinite(result):
-        raise ValueError(f"{name} debe ser float finito. Valor recibido: {value}")
+        raise ValueError(f"{name} must be a finite float. Received: {value}")
     return result
 
 
 def parse_float_range(value, name, min_value, max_value):
     result = parse_float_value(value, name)
     if result < min_value or result > max_value:
-        raise ValueError(f"{name} debe estar entre {min_value} y {max_value}. Valor recibido: {value}")
+        raise ValueError(f"{name} must be between {min_value} and {max_value}. Received: {value}")
     return result
 
 
@@ -173,16 +173,16 @@ def parse_overrides(argv, config):
         raw_key = args[i]
 
         if not raw_key.startswith("--"):
-            raise ValueError(f"Parametro invalido: {raw_key}")
+            raise ValueError(f"Invalid parameter: {raw_key}")
 
         key = raw_key[2:].lower()
 
         if key not in PARAM_MAP:
             valid = ", ".join(sorted("--" + k for k in PARAM_MAP.keys()))
-            raise ValueError(f"Parametro no soportado: {raw_key}\nParametros validos:\n{valid}")
+            raise ValueError(f"Unsupported parameter: {raw_key}\nValid parameters:\n{valid}")
 
         if i + 1 >= len(args):
-            raise ValueError(f"Falta valor para parametro: {raw_key}")
+            raise ValueError(f"Missing value for parameter: {raw_key}")
 
         raw_value = args[i + 1]
         path = PARAM_MAP[key]
@@ -205,9 +205,11 @@ def parse_overrides(argv, config):
 
 def load_config(config_path):
     if not os.path.exists(config_path):
-        raise Exception("No existe input/pipeline_config.json.")
+        raise Exception("input/pipeline_config.json does not exist.")
 
     with open(config_path, "r", encoding="utf-8") as f:
         user_config = json.load(f)
 
     return deep_merge(DEFAULT_CONFIG, user_config)
+
+

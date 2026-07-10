@@ -128,7 +128,7 @@ track_x1 = dist_x + 28
 track_x2 = dist_x + dist_w - 28
 track_y = dist_y + 105
 
-# Ruta
+# Route
 pad = 35
 lats = [r["Latitud"] for r in rows]
 lons = [r["Longitud"] for r in rows]
@@ -149,12 +149,12 @@ for frame in range(total_frames):
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Fecha / Hora
+    # Date / Time
     current_dt = video_start_local + timedelta(seconds=sec)
     draw.text((M, M), current_dt.strftime("%d/%m/%Y"), font=font_date, fill=text_main)
     draw.text((M, M + 44), current_dt.strftime("%H:%M"), font=font_time, fill=text_main)
 
-    # Velocímetro
+    # Speedometer
     draw.rounded_rectangle(
         [speed_panel_x, speed_panel_y, speed_panel_x + speed_panel_w, speed_panel_y + speed_panel_h],
         radius=28,
@@ -260,7 +260,7 @@ for frame in range(total_frames):
     max_w2 = max_bbox2[2] - max_bbox2[0]
     draw.text((track_x2 - max_w2, dist_y + 62), max_txt2, font=font_small, fill=text_main)
 
-    # Ruta
+    # Route
     draw.rounded_rectangle(
         [route_x, route_y, route_x + route_w, route_y + route_h],
         radius=28,
@@ -311,8 +311,10 @@ for cierre_frame in range(70, 100):
         cierre.paste(cierre_src, (x, y), cierre_src)
 
     cierre.save(os.path.join(frames_dir, f"frame_{cierre_frame:05d}.png"))
-print("Frames creados:", total_frames)
-print("Carpeta:", frames_dir)
+print("Frames created:", total_frames)
+print("Folder:", frames_dir)
+
+
 
 
 

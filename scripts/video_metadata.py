@@ -55,7 +55,7 @@ def sort_videos_by_start(videos):
     missing = [v["name"] for v in videos if not v["start"]]
     if missing:
         names = ", ".join(missing)
-        raise Exception(f"Falta creation_time valido para: {names}. Agrega metadata ffprobe valida o video_overrides en la configuracion.")
+        raise Exception(f"Missing valid creation_time for: {names}. Add valid ffprobe metadata or video_overrides in the configuration.")
 
     invalid = [
         f'{v["name"]} (creation_time={v["creation_time_raw"]})'
@@ -64,7 +64,7 @@ def sort_videos_by_start(videos):
     ]
     if invalid:
         names = ", ".join(invalid)
-        raise Exception(f"No se pudo parsear creation_time con ffprobe para: {names}. No se usara fecha de modificacion.")
+        raise Exception(f"Could not parse creation_time with ffprobe for: {names}. Modification date will not be used.")
 
     return sorted(videos, key=lambda v: (v["start"], v["name"].lower()))
 
@@ -142,7 +142,7 @@ def apply_creation_time_override(video, override_creation_time):
 
     override_start = parse_dt(override_creation_time)
     if not override_start:
-        raise Exception(f"Override creation_time invalido para {video['name']}: {override_creation_time}")
+        raise Exception(f"Invalid creation_time override for {video['name']}: {override_creation_time}")
 
     video = dict(video)
     video["start"] = override_start
@@ -195,3 +195,5 @@ def analyze_video(video, gpx, input_video_mode, input_hyperlapse_speed):
         "missing_before_seconds": round(missing_before, 2),
         "missing_after_seconds": round(missing_after, 2)
     }
+
+

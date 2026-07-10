@@ -4,7 +4,7 @@ out_path = r"J:\Fotos\MyTrailStudio\preview_cierre_ruta_tema_A.png"
 
 W, H = 1920, 1080
 
-titulo = "Ruta Finalizada"
+titulo = "Route Completed"
 subtitulo = "Paramo de Arabia"
 
 distancia_total = "5.80 km"
@@ -48,17 +48,17 @@ accent2 = (0, 210, 255, 255)
 panel = [140, 120, W - 140, H - 120]
 draw.rounded_rectangle(panel, radius=46, fill=panel_fill)
 
-# Línea/acento superior con glow
+# Top line/accent with glow
 line_y = 175
 draw.line((520, line_y, W - 520, line_y), fill=accent_glow, width=22)
 draw.line((560, line_y, W - 560, line_y), fill=accent, width=6)
 
-# Título
+# Title
 title_bbox = draw.textbbox((0, 0), titulo, font=font_title)
 title_w = title_bbox[2] - title_bbox[0]
 draw.text(((W - title_w) / 2, 225), titulo, font=font_title, fill=text_main)
 
-# Subtítulo
+# Subtitle
 sub_bbox = draw.textbbox((0, 0), subtitulo, font=font_sub)
 sub_w = sub_bbox[2] - sub_bbox[0]
 draw.text(((W - sub_w) / 2, 325), subtitulo, font=font_sub, fill=text_soft)
@@ -72,9 +72,9 @@ total_w = card_w * 3 + gap * 2
 start_x = (W - total_w) / 2
 
 cards = [
-    ("Distancia total", distancia_total),
-    ("Altura maxima", altura_maxima),
-    ("Duracion", duracion),
+    ("Total distance", distancia_total),
+    ("Max elevation", altura_maxima),
+    ("Duration", duracion),
 ]
 
 for i, (label, value) in enumerate(cards):
@@ -110,13 +110,15 @@ draw.ellipse((dot_x-18, dot_y-18, dot_x+18, dot_y+18), fill=(0, 255, 145, 60))
 draw.ellipse((dot_x-9, dot_y-9, dot_x+9, dot_y+9), fill=accent2)
 
 # Footer
-footer_text = f"Fecha: {fecha}"
+footer_text = f"Date: {fecha}"
 footer_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
 footer_w = footer_bbox[2] - footer_bbox[0]
 draw.text(((W - footer_w) / 2, 835), footer_text, font=font_footer, fill=text_soft)
 
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 

@@ -26,7 +26,7 @@ DEFAULT_EXPORT = {
     },
     "closing_screen": {
         "enabled": False,
-        "message": "Ruta Finalizada",
+        "message": "Route Completed",
         "seconds": 3,
     },
 }
@@ -108,4 +108,6 @@ def new_project_document(
 def touch_project(document: dict[str, Any]) -> dict[str, Any]:
     document["project"]["updated_at_utc"] = utc_now_iso()
     return document
+
+
 

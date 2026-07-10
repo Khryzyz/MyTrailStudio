@@ -16,3 +16,5 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
+
+

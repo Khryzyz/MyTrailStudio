@@ -6,7 +6,7 @@ param(
     [int]$Fps = 30,
     [double]$OutputSpeed = 3.5,
     [int]$PreviewSeconds = 10,
-    [string]$ClosingMessage = "Ruta Finalizada",
+    [string]$ClosingMessage = "Route Completed",
     [int]$ClosingSeconds = 3,
     [switch]$RunFinalRender
 )
@@ -27,15 +27,15 @@ function Run-Step {
     Write-Host "====================================="
     & $Command
     if ($LASTEXITCODE -ne 0) {
-        throw "Fallo el paso: $Title"
+        throw "Step failed: $Title"
     }
 }
 
-Run-Step "1. Resumen inicial" {
+Run-Step "1. Initial summary" {
     .\mts.ps1 project-summary --project $ProjectId
 }
 
-Run-Step "2. Configurar exportacion final" {
+Run-Step "2. Configure final export" {
     .\mts.ps1 set-export `
         --project $ProjectId `
         --resolution $Resolution `
@@ -49,45 +49,45 @@ Run-Step "2. Configurar exportacion final" {
         --closing-seconds $ClosingSeconds
 }
 
-Run-Step "3. Validar motor" {
+Run-Step "3. Validate engine" {
     .\mts.ps1 engine-validate --project $ProjectId --quiet
 }
 
-Run-Step "4. Generar preview" {
+Run-Step "4. Generate preview" {
     .\mts.ps1 engine-preview --project $ProjectId --seconds $PreviewSeconds --quiet
 }
 
-Run-Step "5. Revisar preview en resumen" {
+Run-Step "5. Check preview in summary" {
     .\mts.ps1 project-summary --project $ProjectId
 }
 
 if ($RunFinalRender) {
-    Run-Step "6. Render final" {
+    Run-Step "6. Final render" {
         .\mts.ps1 engine-render-final --project $ProjectId --confirm "RENDER_FINAL" --quiet
     }
 } else {
     Write-Host ""
     Write-Host "====================================="
-    Write-Host "6. Render final omitido"
+    Write-Host "6. Final render skipped"
     Write-Host "====================================="
-    Write-Host "Ejecuta este script con -RunFinalRender para incluir el render final."
+    Write-Host "Run this script with -RunFinalRender to include the final render."
 }
 
-Run-Step "7. Revisar carpeta final" {
+Run-Step "7. Check final folder" {
     $summaryJson = .\mts.ps1 inspect-project --project $ProjectId | ConvertFrom-Json
     $finalDir = Join-Path $summaryJson.export.output_dir "final"
-    Write-Host "Carpeta final: $finalDir"
+    Write-Host "Final folder: $finalDir"
     if (Test-Path $finalDir) {
         Get-ChildItem $finalDir -File | Select-Object Name, Length, LastWriteTime
     } else {
-        Write-Host "No existe carpeta final todavia."
+        Write-Host "Final folder does not exist yet."
     }
 }
 
-Run-Step "8. Validacion y resumen final" {
+Run-Step "8. Final validation and summary" {
     .\mts.ps1 validate-project --project $ProjectId
     .\mts.ps1 project-summary --project $ProjectId
 }
 
 Write-Host ""
-Write-Host "Prueba integral completada."
+Write-Host "Integral test completed."

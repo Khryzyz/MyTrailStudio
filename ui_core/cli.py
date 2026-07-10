@@ -28,38 +28,38 @@ def print_json(data: dict) -> None:
 
 
 def print_validation_report(report: dict) -> None:
-    print("Validacion del proyecto")
-    print(f"Proyecto: {report['project_id']}")
+    print("Project validation")
+    print(f"Project: {report['project_id']}")
     print(f"Videos: {report['videos']}")
     print(f"Timelines: {report['timelines']}")
-    print(f"Huecos detectados: {len(report['gaps'])}")
+    print(f"Detected gaps: {len(report['gaps'])}")
 
     if report["warnings"]:
         print("")
-        print("Advertencias:")
+        print("Warnings:")
         for warning in report["warnings"]:
             print(f" - {warning}")
 
     if report["errors"]:
         print("")
-        print("Errores:")
+        print("Errors:")
         for error in report["errors"]:
             print(f" - {error}")
 
 
 def print_project_list(projects: list[dict]) -> None:
     if not projects:
-        print("No hay proyectos creados.")
+        print("No projects found.")
         return
 
-    print("Proyectos")
+    print("Projects")
     for project in projects:
         print("")
         print(f"ID: {project['id']}")
-        print(f"Nombre: {project['name']}")
+        print(f"Name: {project['name']}")
         print(f"GPX: {project['gpx_start_utc']} -> {project['gpx_end_utc']}")
         print(f"Videos: {project['videos']}")
-        print(f"Actualizado: {project['updated_at_utc']}")
+        print(f"Updated: {project['updated_at_utc']}")
 
 
 def print_project_summary(summary: dict) -> None:
@@ -68,77 +68,77 @@ def print_project_summary(summary: dict) -> None:
     videos = summary["videos"]
     engine = summary["engine"]
 
-    print("Resumen del proyecto")
+    print("Project summary")
     print(f"ID: {project['id']}")
-    print(f"Nombre: {project['name']}")
-    print(f"Actualizado: {project['updated_at_utc']}")
+    print(f"Name: {project['name']}")
+    print(f"Updated: {project['updated_at_utc']}")
     print("")
     print("GPX")
-    print(f"Inicio: {gpx.get('start_utc')}")
-    print(f"Fin: {gpx.get('end_utc')}")
-    print(f"Duracion: {summary['duration_text']['gpx']}")
-    print(f"Distancia: {round(float(gpx.get('distance_m') or 0) / 1000, 3)} km")
-    print(f"Altura: {gpx.get('min_altitude_m')} m -> {gpx.get('max_altitude_m')} m")
+    print(f"Start: {gpx.get('start_utc')}")
+    print(f"End: {gpx.get('end_utc')}")
+    print(f"Duration: {summary['duration_text']['gpx']}")
+    print(f"Distance: {round(float(gpx.get('distance_m') or 0) / 1000, 3)} km")
+    print(f"Elevation: {gpx.get('min_altitude_m')} m -> {gpx.get('max_altitude_m')} m")
     print("")
     print("Videos")
-    print(f"Cantidad: {videos['count']}")
-    print(f"Duracion archivos: {summary['duration_text']['videos_file']}")
-    print(f"Duracion real: {summary['duration_text']['videos_real']}")
+    print(f"Count: {videos['count']}")
+    print(f"File duration: {summary['duration_text']['videos_file']}")
+    print(f"Real duration: {summary['duration_text']['videos_real']}")
     if videos["statuses"]:
-        print("Estados: " + ", ".join(f"{key}={value}" for key, value in sorted(videos["statuses"].items())))
+        print("Statuses: " + ", ".join(f"{key}={value}" for key, value in sorted(videos["statuses"].items())))
     print(f"Timelines: {summary['timelines']['count']}")
-    print(f"Huecos: {len(summary['gaps'])}")
+    print(f"Gaps: {len(summary['gaps'])}")
     print("")
-    print("Exportacion")
+    print("Export")
     export = summary["export"]
-    print(f"Salida: {export.get('output_dir')}")
-    print(f"Resolucion: {export.get('resolution')}")
+    print(f"Output: {export.get('output_dir')}")
+    print(f"Resolution: {export.get('resolution')}")
     print(f"FPS: {export.get('fps')}")
-    print(f"Velocidad final: {export.get('output_hyperlapse_speed')}x")
-    print(f"Eliminar audio: {export.get('remove_audio')}")
-    print(f"Video unico: {export.get('single_final_video')}")
-    print(f"Transiciones: {export.get('apply_transitions')}")
+    print(f"Final speed: {export.get('output_hyperlapse_speed')}x")
+    print(f"Remove audio: {export.get('remove_audio')}")
+    print(f"Single final video: {export.get('single_final_video')}")
+    print(f"Transitions: {export.get('apply_transitions')}")
     closing = export.get("closing_screen", {})
-    print(f"Cierre: {closing.get('enabled')} - {closing.get('seconds')}s - {closing.get('message')}")
+    print(f"Closing: {closing.get('enabled')} - {closing.get('seconds')}s - {closing.get('message')}")
 
     if videos["items"]:
         print("")
-        print("Lista de videos")
+        print("Video list")
         for index, video in enumerate(videos["items"], start=1):
             timeline = video["timeline_id"] if video["timeline_id"] is not None else "N/D"
             print(f"{index}. {video['name']} | {video['gpx_status']} | timeline {timeline}")
 
     if summary["warnings"]:
         print("")
-        print("Advertencias:")
+        print("Warnings:")
         for warning in summary["warnings"]:
             print(f" - {warning}")
 
     if summary["errors"]:
         print("")
-        print("Errores:")
+        print("Errors:")
         for error in summary["errors"]:
             print(f" - {error}")
 
     print("")
-    print("Motor")
-    print(f"Config temporal: {engine['generated_config_path'] or 'N/D'}")
+    print("Engine")
+    print(f"Temporary config: {engine['generated_config_path'] or 'N/D'}")
     print(f"Manifest: {engine['last_manifest_path'] or 'N/D'}")
-    print(f"Manifest existe: {engine['manifest_exists']}")
+    print(f"Manifest exists: {engine['manifest_exists']}")
     if engine["previews"]:
         print("Previews:")
         for preview in engine["previews"]:
             print(f" - {preview}")
     else:
-        print("Previews: ninguno detectado")
+        print("Previews: none detected")
     if engine["finals"]:
-        print("Finales:")
+        print("Finals:")
         for final in engine["finals"]:
             print(f" - {final}")
     else:
-        print("Finales: ninguno detectado")
+        print("Finals: none detected")
     if engine["render_reports"]:
-        print("Reportes:")
+        print("Reports:")
         for report in engine["render_reports"]:
             print(f" - {report}")
     if engine["logs"]:
@@ -157,7 +157,7 @@ def cmd_create_project(args: argparse.Namespace) -> int:
         timezone_name=args.timezone,
     )
     path = project_file(Path(project["workspace"]["project_data_dir"]))
-    print("Proyecto creado:")
+    print("Project created:")
     print(path)
     print("")
     print_json({
@@ -194,17 +194,17 @@ def cmd_add_video(args: argparse.Namespace) -> int:
         mode=args.mode,
         hyperlapse_speed=args.hyperlapse_speed,
     )
-    print("Video agregado")
-    print(f"Proyecto: {project['project']['id']} - {project['project']['name']}")
+    print("Video added")
+    print(f"Project: {project['project']['id']} - {project['project']['name']}")
     print(f"GPX: {project['gpx_summary']['start_utc']} -> {project['gpx_summary']['end_utc']}")
     print(f"Video: {video['name']}")
-    print(f"Inicio video: {video['creation_time_utc'] or 'SIN HORA'}")
-    print(f"Duracion archivo: {video['duration_file_seconds']} s")
-    print(f"Duracion real: {video['duration_real_seconds']} s")
-    print(f"Estado GPX: {video['gpx_status']}")
+    print(f"Video start: {video['creation_time_utc'] or 'NO TIME'}")
+    print(f"File duration: {video['duration_file_seconds']} s")
+    print(f"Real duration: {video['duration_real_seconds']} s")
+    print(f"GPX status: {video['gpx_status']}")
     if video["gpx_status"] == "FUERA_DEL_GPX":
         print("")
-        print("Advertencia: el video queda fuera del rango del GPX de este proyecto.")
+        print("Warning: the video is outside this project GPX range.")
     return 0
 
 
@@ -219,31 +219,31 @@ def cmd_add_videos_dir(args: argparse.Namespace) -> int:
         include_out_of_gpx=args.include_out_of_gpx,
     )
 
-    print("Importacion de carpeta")
-    print(f"Proyecto: {project['project']['id']} - {project['project']['name']}")
-    print(f"Carpeta: {result['folder']}")
-    print(f"Videos encontrados: {result['candidates']}")
-    print(f"Agregados: {len(result['added'])}")
-    print(f"Omitidos: {len(result['skipped'])}")
-    print(f"Fallidos: {len(result['failed'])}")
+    print("Folder import")
+    print(f"Project: {project['project']['id']} - {project['project']['name']}")
+    print(f"Folder: {result['folder']}")
+    print(f"Videos found: {result['candidates']}")
+    print(f"Added: {len(result['added'])}")
+    print(f"Skipped: {len(result['skipped'])}")
+    print(f"Failed: {len(result['failed'])}")
     if result["statuses"]:
-        print("Estados: " + ", ".join(f"{key}={value}" for key, value in sorted(result["statuses"].items())))
+        print("Statuses: " + ", ".join(f"{key}={value}" for key, value in sorted(result["statuses"].items())))
 
     if result["added"]:
         print("")
-        print("Videos agregados:")
+        print("Added videos:")
         for video in result["added"]:
-            print(f" - {video['name']} | {video['gpx_status']} | {video['creation_time_utc'] or 'SIN HORA'}")
+            print(f" - {video['name']} | {video['gpx_status']} | {video['creation_time_utc'] or 'NO TIME'}")
 
     if result["failed"]:
         print("")
-        print("Fallidos:")
+        print("Failed:")
         for item in result["failed"]:
             print(f" - {item['path']}: {item['error']}")
 
     if result["skipped"]:
         print("")
-        print("Omitidos:")
+        print("Skipped:")
         for item in result["skipped"]:
             print(f" - {item['path']}: {item['reason']}")
 
@@ -273,7 +273,7 @@ def cmd_set_export(args: argparse.Namespace) -> int:
         "closing_seconds": args.closing_seconds,
     }
     export = update_export_settings(project, updates)
-    print("Configuracion de exportacion actualizada")
+    print("Export settings updated")
     print_json(export)
     return 0
 
@@ -290,14 +290,14 @@ def cmd_engine_preview(args: argparse.Namespace) -> int:
 
 def cmd_engine_render_final(args: argparse.Namespace) -> int:
     if args.confirm != "RENDER_FINAL":
-        raise ValueError('Para render final debes pasar --confirm "RENDER_FINAL".')
+        raise ValueError('For final render you must pass --confirm "RENDER_FINAL".')
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
     return run_engine_render_final(project, quiet=args.quiet)
 
 
 def open_path(path: Path) -> None:
     if not path.exists():
-        raise FileNotFoundError(f"No existe ruta para abrir: {path}")
+        raise FileNotFoundError(f"Path to open does not exist: {path}")
     subprocess.Popen(
         ["powershell", "-NoProfile", "-Command", "Start-Process", "-LiteralPath", str(path)],
         stdout=subprocess.DEVNULL,
@@ -310,7 +310,7 @@ def cmd_open_output(args: argparse.Namespace) -> int:
     output_dir = Path(project["export"]["output_dir"])
     target = output_dir / args.subdir if args.subdir else output_dir
     open_path(target)
-    print(f"Abriendo: {target}")
+    print(f"Opening: {target}")
     return 0
 
 
@@ -318,7 +318,7 @@ def cmd_open_project_data(args: argparse.Namespace) -> int:
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
     target = Path(project["workspace"]["project_data_dir"])
     open_path(target)
-    print(f"Abriendo: {target}")
+    print(f"Opening: {target}")
     return 0
 
 
@@ -338,12 +338,12 @@ def cmd_set_video_time(args: argparse.Namespace) -> int:
             matched = video
             break
     if not matched:
-        raise SystemExit(f"No se encontro video por id o nombre: {args.video}")
+        raise SystemExit(f"Video not found by ID or name: {args.video}")
 
     matched["manual_creation_time_utc"] = args.time
     touch_project(project)
     save_project(project)
-    print("Fecha manual asignada:")
+    print("Date manual asignada:")
     print_json({
         "video_id": matched["id"],
         "name": matched["name"],
@@ -355,28 +355,28 @@ def cmd_set_video_time(args: argparse.Namespace) -> int:
 def cmd_remove_video(args: argparse.Namespace) -> int:
     project = load_project(args.project, Path(args.app_data) if args.app_data else None)
     removed = remove_video(project, args.video)
-    print("Video eliminado del proyecto:")
-    print(f"Proyecto: {project['project']['id']} - {project['project']['name']}")
+    print("Video removed from project:")
+    print(f"Project: {project['project']['id']} - {project['project']['name']}")
     print(f"Video: {removed['name']}")
     return 0
 
 
 def cmd_delete_project(args: argparse.Namespace) -> int:
     if args.confirm != args.project:
-        raise ValueError("Para borrar el proyecto, --confirm debe ser exactamente igual a --project.")
+        raise ValueError("To delete the project, --confirm must exactly match --project.")
 
     deleted = delete_project(args.project, Path(args.app_data) if args.app_data else None)
-    print("Proyecto eliminado:")
+    print("Project deleted:")
     print(f"ID: {deleted['id']}")
-    print(f"Nombre: {deleted['name']}")
-    print(f"Carpeta eliminada: {deleted['deleted_dir']}")
-    print("Nota: no se eliminaron GPX, videos ni audios originales referenciados por el proyecto.")
+    print(f"Name: {deleted['name']}")
+    print(f"Deleted folder: {deleted['deleted_dir']}")
+    print("Note: original GPX, videos, and audio files referenced by the project were not deleted.")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=".\\mts.ps1")
-    parser.add_argument("--app-data", help="Carpeta central de datos de la app.")
+    parser.add_argument("--app-data", help="Central app data folder.")
 
     subparsers = parser.add_subparsers(required=True)
 
@@ -384,12 +384,12 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--name", required=True)
     create.add_argument("--gpx", required=True)
     create.add_argument("--output", required=True)
-    create.add_argument("--engine-root", help="Carpeta del engine. Si se omite, usa la carpeta actual.")
+    create.add_argument("--engine-root", help="Engine folder. If omitted, uses the current folder.")
     create.add_argument("--timezone", default="America/Bogota")
     create.set_defaults(func=cmd_create_project)
 
     inspect = subparsers.add_parser("inspect-project")
-    inspect.add_argument("--project", required=True, help="ID, carpeta o archivo project.overlayproject.json.")
+    inspect.add_argument("--project", required=True, help="ID, folder, or project.overlayproject.json file.")
     inspect.set_defaults(func=cmd_inspect_project)
 
     list_cmd = subparsers.add_parser("list-projects")
@@ -446,7 +446,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     engine_render = subparsers.add_parser("engine-render-final")
     engine_render.add_argument("--project", required=True)
-    engine_render.add_argument("--confirm", required=True, help='Debe ser exactamente "RENDER_FINAL".')
+    engine_render.add_argument("--confirm", required=True, help='Must be exactly "RENDER_FINAL".')
     engine_render.add_argument("--quiet", action="store_true")
     engine_render.set_defaults(func=cmd_engine_render_final)
 
@@ -466,7 +466,7 @@ def build_parser() -> argparse.ArgumentParser:
     set_time = subparsers.add_parser("set-video-time")
     set_time.add_argument("--project", required=True)
     set_time.add_argument("--video", required=True, help="ID o nombre del video.")
-    set_time.add_argument("--time", required=True, help="Fecha ISO UTC, por ejemplo 2026-07-09T12:00:00Z.")
+    set_time.add_argument("--time", required=True, help="Date ISO UTC, por ejemplo 2026-07-09T12:00:00Z.")
     set_time.set_defaults(func=cmd_set_video_time)
 
     remove = subparsers.add_parser("remove-video")
@@ -476,7 +476,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     delete = subparsers.add_parser("delete-project")
     delete.add_argument("--project", required=True)
-    delete.add_argument("--confirm", required=True, help="Debe ser exactamente igual al ID del proyecto.")
+    delete.add_argument("--confirm", required=True, help="Must exactly match the project ID.")
     delete.set_defaults(func=cmd_delete_project)
 
     return parser
@@ -488,7 +488,7 @@ def main() -> int:
     try:
         return args.func(args)
     except KeyboardInterrupt:
-        print("Operacion cancelada.")
+        print("Operation canceled.")
         return 130
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -497,3 +497,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+

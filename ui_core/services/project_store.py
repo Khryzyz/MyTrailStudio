@@ -37,7 +37,7 @@ def create_project(
     output_dir = output_dir.resolve()
 
     if not gpx_path.is_file():
-        raise FileNotFoundError(f"No existe GPX: {gpx_path}")
+        raise FileNotFoundError(f"GPX does not exist: {gpx_path}")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     gpx_summary = summarize_gpx(engine_root, gpx_path)
@@ -77,7 +77,7 @@ def load_project(project_path_or_id: str, app_data_dir: Path | None = None) -> d
     app_dir = resolve_app_data_dir(str(app_data_dir)) if app_data_dir else resolve_app_data_dir()
     path = project_file(projects_dir(app_dir) / project_path_or_id)
     if not path.is_file():
-        raise FileNotFoundError(f"No existe proyecto: {project_path_or_id}")
+        raise FileNotFoundError(f"Project does not exist: {project_path_or_id}")
     return read_json(path)
 
 
@@ -112,7 +112,7 @@ def delete_project(project_path_or_id: str, app_data_dir: Path | None = None) ->
     project_path = project_file(project_dir).resolve()
 
     if not project_path.is_file():
-        raise FileNotFoundError(f"No existe archivo de proyecto: {project_path}")
+        raise FileNotFoundError(f"Project file does not exist: {project_path}")
 
     app_dir = resolve_app_data_dir(str(app_data_dir)) if app_data_dir else resolve_app_data_dir()
     allowed_root = projects_dir(app_dir).resolve()
@@ -120,7 +120,7 @@ def delete_project(project_path_or_id: str, app_data_dir: Path | None = None) ->
     try:
         project_dir.relative_to(allowed_root)
     except ValueError:
-        raise ValueError(f"No se elimina un proyecto fuera del almacen central: {project_dir}")
+        raise ValueError(f"Cannot delete a project outside the central store: {project_dir}")
 
     shutil.rmtree(project_dir)
     return {
@@ -134,3 +134,5 @@ def save_project(document: dict[str, Any]) -> Path:
     path = project_file(Path(document["workspace"]["project_data_dir"]))
     write_json(path, document)
     return path
+
+

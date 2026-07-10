@@ -92,7 +92,7 @@ def render_video_clip(
     ]
 
     print("")
-    print("Renderizando clip:")
+    print("Rendering clip:")
     print(out_path)
     subprocess.run(cmd, check=True)
 
@@ -150,7 +150,7 @@ def create_closing_clip(root, manifest, gpx_points, out_path):
     ]
 
     print("")
-    print("Creando pantalla final:")
+    print("Creating closing screen:")
     print(out_path)
     subprocess.run(cmd, check=True)
 
@@ -175,6 +175,8 @@ def concat_videos(paths, output_path):
     ]
 
     print("")
-    print("Uniendo clips:")
+    print("Concatenating clips:")
     print(output_path)
     subprocess.run(cmd, check=True)
+
+

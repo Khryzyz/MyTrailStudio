@@ -34,3 +34,5 @@ def summarize_gpx(engine_root: Path, gpx_path: Path) -> dict[str, Any]:
         "points_count": len(points),
     }
 
+
+

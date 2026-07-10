@@ -181,13 +181,13 @@ def render_overlay_frame(W, H, config, gpx_points, current_time, current, frame,
 
     current_local = current_time.astimezone(timezone(timedelta(hours=-5)))
     fecha_txt = current_local.strftime("%d/%m/%Y")
-    hora_txt = current_local.strftime("%H:%M")
+    time_txt = current_local.strftime("%H:%M")
 
     draw.text((M, M), fecha_txt, font=font_date, fill=text_main, stroke_width=3, stroke_fill=(0,0,0,255))
-    draw.text((M, M + 44), hora_txt, font=font_time, fill=text_main, stroke_width=3, stroke_fill=(0,0,0,255))
+    draw.text((M, M + 44), time_txt, font=font_time, fill=text_main, stroke_width=3, stroke_fill=(0,0,0,255))
 
     if not current["gps_available"] and config["setting"]["layout"]["show_gps_unavailable"]:
-        gps_msg = "GPS no disponible"
+        gps_msg = "GPS unavailable"
         gps_bbox = draw.textbbox((0,0), gps_msg, font=font_gps)
         gps_w = gps_bbox[2] - gps_bbox[0]
         gps_x = (W - (gps_w + 34)) / 2
@@ -329,7 +329,7 @@ def render_closing_frame(W, H, config, route_name, stats, font_path):
     accent_glow = (0, 255, 145, 55)
     accent2 = (0, 210, 255, 255)
 
-    msg = config["output"]["closing_screen"]["message"] or "Ruta Finalizada"
+    msg = config["output"]["closing_screen"]["message"] or "Route Completed"
 
     panel = [int(W * 0.075), int(H * 0.11), int(W * 0.925), int(H * 0.89)]
     draw.rounded_rectangle(panel, radius=46, fill=panel_fill)
@@ -342,15 +342,15 @@ def render_closing_frame(W, H, config, route_name, stats, font_path):
     title_w = title_bbox[2] - title_bbox[0]
     draw.text(((W - title_w) / 2, int(H * 0.22)), msg, font=font_title, fill=text_main)
 
-    subtitle = route_name or "Ruta"
+    subtitle = route_name or "Route"
     sub_bbox = draw.textbbox((0, 0), subtitle, font=font_sub)
     sub_w = sub_bbox[2] - sub_bbox[0]
     draw.text(((W - sub_w) / 2, int(H * 0.32)), subtitle, font=font_sub, fill=text_soft)
 
     cards = [
-        ("Distancia total", f"{stats['dist_km']:.2f} km"),
-        ("Altura maxima", f"{stats['max_alt']:.0f} m"),
-        ("Duracion", stats["duration_text"]),
+        ("Total distance", f"{stats['dist_km']:.2f} km"),
+        ("Max elevation", f"{stats['max_alt']:.0f} m"),
+        ("Duration", stats["duration_text"]),
     ]
 
     card_w = int(W * 0.24)
@@ -377,9 +377,11 @@ def render_closing_frame(W, H, config, route_name, stats, font_path):
     draw.ellipse((dot_x-18, dot_y-18, dot_x+18, dot_y+18), fill=(0, 255, 145, 60))
     draw.ellipse((dot_x-9, dot_y-9, dot_x+9, dot_y+9), fill=accent2)
 
-    footer_text = f"Fecha: {stats['date_text']}"
+    footer_text = f"Date: {stats['date_text']}"
     footer_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
     footer_w = footer_bbox[2] - footer_bbox[0]
     draw.text(((W - footer_w) / 2, int(H * 0.84)), footer_text, font=font_footer, fill=text_soft)
 
     return img
+
+

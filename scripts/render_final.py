@@ -80,17 +80,17 @@ def print_render_summary(manifest):
     estimated_frames = sum(math.ceil(float(v["duration_file_seconds"]) * overlay_fps) for v in videos)
 
     print("")
-    print("===== RESUMEN ANTES DEL RENDER FINAL =====")
+    print("===== SUMMARY BEFORE FINAL RENDER =====")
     print("Videos:", len(videos))
-    print("Duracion total real:", str(timedelta(seconds=round(input_real_seconds))))
-    print("Duracion final estimada:", str(timedelta(seconds=round(estimated_final_seconds))))
-    print("Velocidad final deseada:", config["output"]["hyperlapse_speed"], "x")
-    print("Factor tecnico FFmpeg:", round(ffmpeg_output_speed_factor(config), 6), "x")
+    print("Total real duration:", str(timedelta(seconds=round(input_real_seconds))))
+    print("Estimated final duration:", str(timedelta(seconds=round(estimated_final_seconds))))
+    print("Desired final speed:", config["output"]["hyperlapse_speed"], "x")
+    print("Technical FFmpeg factor:", round(ffmpeg_output_speed_factor(config), 6), "x")
     print("Overlay FPS:", overlay_fps)
     print("Frames aproximados:", estimated_frames)
-    print("Carpeta salida:", os.path.join(manifest["resolved_paths"]["output_dir"], "final"))
-    print("Pantalla final:", closing_add, "-", closing_seconds, "s")
-    print("Limpiar al terminar:", config["output"].get("cleanup_after_render", True))
+    print("Output folder:", os.path.join(manifest["resolved_paths"]["output_dir"], "final"))
+    print("Closing screen:", closing_add, "-", closing_seconds, "s")
+    print("Cleanup after render:", config["output"].get("cleanup_after_render", True))
     print("")
 
 
@@ -128,7 +128,7 @@ def write_render_report(manifest, manifest_path, final_path, render_profile):
         "input_duration_real_seconds": round(input_real_seconds, 2),
         "estimated_output_video_seconds_without_closing": round(estimated_final_seconds, 2),
         "output_hyperlapse_speed": config["output"]["hyperlapse_speed"],
-        "output_hyperlapse_speed_meaning": "velocidad final deseada respecto al tiempo real de la ruta",
+        "output_hyperlapse_speed_meaning": "desired final speed relative to real route time",
         "ffmpeg_speed_factor": round(ffmpeg_output_speed_factor(config), 6),
         "resolution": config["output"]["resolution"],
         "fps": config["output"]["fps"],
@@ -153,12 +153,12 @@ def write_render_report(manifest, manifest_path, final_path, render_profile):
         f.write(f"Videos: {len(videos)}\n")
         for idx, video in enumerate(videos, start=1):
             f.write(f"  {idx}. {video['name']} ({video['start_utc']} -> {video['real_end_utc']})\n")
-        f.write(f"Resolucion: {config['output']['resolution']}\n")
+        f.write(f"Resolution: {config['output']['resolution']}\n")
         f.write(f"FPS: {config['output']['fps']}\n")
         f.write(f"Remove audio: {config['output']['remove_audio']}\n")
 
     print("")
-    print("Reporte final creado:")
+    print("Final report created:")
     print(json_path)
     print(txt_path)
 
@@ -185,10 +185,10 @@ def render_overlay_frames(root, manifest, video, gpx_points, frames_dir):
     os.makedirs(frames_dir, exist_ok=True)
 
     print("")
-    print("Generando frames del overlay final...")
+    print("Generating final overlay frames...")
     print("Video:", video["name"])
     print("Frames:", total_frames)
-    print("Carpeta:", frames_dir)
+    print("Folder:", frames_dir)
     print("")
 
     frame_tasks = []
@@ -220,7 +220,7 @@ def main():
     resume = bool(config["output"].get("resume", True))
 
     if config["output"]["preview"]["add"]:
-        print("Preview activado. No se genera render final.")
+        print("Preview enabled. Final render not generated.")
         return
 
     print_render_summary(manifest)
@@ -255,7 +255,7 @@ def main():
 
         if resume and artifact_exists(clip_path):
             print("")
-            print("Clip existente reutilizado:")
+            print("Existing clip reused:")
             print(clip_path)
         else:
             render_overlay_frames(root, manifest, video, gpx_points, frames_dir)
@@ -281,7 +281,7 @@ def main():
         closing_clip = os.path.join(temp_dir, "clip_999_closing_screen.mp4")
         if resume and artifact_exists(closing_clip):
             print("")
-            print("Pantalla final existente reutilizada:")
+            print("Existing closing screen reused:")
             print(closing_clip)
         else:
             create_closing_clip(root, manifest, gpx_points, closing_clip)
@@ -296,7 +296,7 @@ def main():
         final_path = os.path.join(final_dir, f"{out_name}_overlay_hyperlapse_{speed_txt}x_{resolution}.mp4")
         if resume and final_artifact_matches_profile(final_path, final_dir, profile_name):
             print("")
-            print("Video final existente reutilizado:")
+            print("Existing final video reused:")
             print(final_path)
         else:
             concat_videos(rendered_clips, final_path)
@@ -306,14 +306,14 @@ def main():
                 dest = os.path.join(final_dir, os.path.basename(clip))
                 if resume and artifact_exists(dest):
                     print("")
-                    print("Archivo final existente reutilizado:")
+                    print("Existing final file reused:")
                     print(dest)
                 else:
                     shutil.copy2(clip, final_dir)
         final_path = final_dir
 
     print("")
-    print("Render final completado:")
+    print("Final render completed:")
     print(final_path)
 
     write_render_report(manifest, manifest_path, final_path, profile_name)
@@ -323,4 +323,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 

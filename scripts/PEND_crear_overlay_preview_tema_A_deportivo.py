@@ -12,7 +12,7 @@ video_start_local = datetime(2026, 6, 28, 10, 37, 0)
 
 # ===== Layout base =====
 M = 40   # margen uniforme contra borde
-G = 35   # separación uniforme entre paneles
+G = 35   # uniform spacing between panels
 
 def load_font(size):
     candidates = [
@@ -65,17 +65,17 @@ accent = (0, 255, 145, 255)
 accent2 = (0, 210, 255, 255)
 panel_border = (0, 255, 145, 150)
 
-# ===== Fecha / Hora =====
+# ===== Date / Time =====
 current_dt = video_start_local + timedelta(seconds=target_second)
 fecha_txt = current_dt.strftime("%d/%m/%Y")
-hora_txt = current_dt.strftime("%H:%M")
+time_txt = current_dt.strftime("%H:%M")
 
 date_x = M
 date_y = M
 draw.text((date_x, date_y), fecha_txt, font=font_date, fill=text_main)
-draw.text((date_x, date_y + 44), hora_txt, font=font_time, fill=text_main)
+draw.text((date_x, date_y + 44), time_txt, font=font_time, fill=text_main)
 
-# ===== Ruta =====
+# ===== Route =====
 route_w = 600
 route_h = 320
 route_x = W - M - route_w
@@ -132,7 +132,7 @@ min_bbox = draw.textbbox((0,0), min_txt, font=font_small)
 min_w = min_bbox[2] - min_bbox[0]
 draw.text((panel_center_x - min_w/2, bar_y2 + 12), min_txt, font=font_small, fill=text_main)
 
-# ===== Panel velocímetro compacto, centrado como un solo bloque =====
+# ===== Compact speedometer panel, centered as a single block =====
 speed_panel_x = M
 speed_panel_y = 165
 speed_panel_w = 430
@@ -148,7 +148,7 @@ max_speed_scale = 8.0
 speed = current["VelocidadKmh"]
 speed_ratio = max(0.0, min(speed / max_speed_scale, 1.0))
 
-# grupo completo: velocímetro + label
+# full group: speedometer + label
 group_center_x = speed_panel_x + (speed_panel_w // 2)
 group_center_y = speed_panel_y + (speed_panel_h // 2)
 
@@ -159,7 +159,7 @@ gauge_cy = group_center_y - 20
 bbox = [gauge_cx - gauge_r, gauge_cy - gauge_r, gauge_cx + gauge_r, gauge_cy + gauge_r]
 draw.arc(bbox, start=180, end=360, fill=track_soft, width=10)
 
-# Arco de progreso del velocímetro
+# Speedometer progress arc
 progress_end = 180 + (180 * speed_ratio)
 draw.arc(bbox, start=180, end=progress_end, fill=(0, 255, 145, 60), width=22)
 draw.arc(bbox, start=180, end=progress_end, fill=accent, width=10)
@@ -223,7 +223,7 @@ max_bbox2 = draw.textbbox((0,0), max_txt2, font=font_small)
 max_w2 = max_bbox2[2] - max_bbox2[0]
 draw.text((track_x2 - max_w2, dist_y + 62), max_txt2, font=font_small, fill=text_main)
 
-# ===== Ruta dibujo =====
+# ===== Route dibujo =====
 pad = 35
 lats = [r["Latitud"] for r in rows]
 lons = [r["Longitud"] for r in rows]
@@ -250,14 +250,16 @@ draw.ellipse((px-7, py-7, px+7, py+7), fill=accent2)
 
 # ===== FECHA HORA FORZADA =====
 fecha_txt = current_dt.strftime("%d/%m/%Y")
-hora_txt = current_dt.strftime("%H:%M")
+time_txt = current_dt.strftime("%H:%M")
 
 draw.text((M, M), fecha_txt, font=font_date, fill=text_main, stroke_width=3, stroke_fill=(0, 0, 0, 255))
-draw.text((M, M + 44), hora_txt, font=font_time, fill=text_main, stroke_width=3, stroke_fill=(0, 0, 0, 255))
+draw.text((M, M + 44), time_txt, font=font_time, fill=text_main, stroke_width=3, stroke_fill=(0, 0, 0, 255))
 
 # ===== FIN FECHA HORA FORZADA =====
 img.save(out_path)
 print("Imagen creada:", out_path)
+
+
 
 
 

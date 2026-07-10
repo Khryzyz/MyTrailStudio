@@ -23,7 +23,7 @@ def parse_dt(value):
 
 def fmt(dt, tz):
     if not dt:
-        return "SIN HORA"
+        return "NO TIME"
     return dt.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -72,3 +72,5 @@ def safe_name(value):
         elif c in [" ", "."]:
             keep.append("_")
     return "".join(keep).strip("_")
+
+

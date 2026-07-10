@@ -20,10 +20,12 @@ def resolve_engine_root(value: str | None = None) -> Path:
     if missing:
         missing_text = ", ".join(missing)
         raise FileNotFoundError(
-            "La carpeta actual no parece ser el engine My Trail Studio. "
-            f"Root usado: {root}. Faltan: {missing_text}. "
-            "Ejecuta el comando desde la carpeta del engine o usa --engine-root."
+            "The current folder does not look like the My Trail Studio engine. "
+            f"Root used: {root}. Missing: {missing_text}. "
+            "Run the command from the engine folder or use --engine-root."
         )
     return root
+
+
 
 

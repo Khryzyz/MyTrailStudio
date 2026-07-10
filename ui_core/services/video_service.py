@@ -26,17 +26,17 @@ def add_video(
     hyperlapse_speed: float = 2.0,
 ) -> dict[str, Any]:
     if mode not in {"normal", "hyperlapse"}:
-        raise ValueError("mode debe ser normal o hyperlapse")
+        raise ValueError("mode must be normal or hyperlapse")
     if hyperlapse_speed < 1.0 or hyperlapse_speed > 50.0:
-        raise ValueError("hyperlapse_speed debe estar entre 1.0 y 50.0")
+        raise ValueError("hyperlapse_speed must be between 1.0 and 50.0")
 
     video_path = video_path.resolve()
     if not video_path.is_file():
-        raise FileNotFoundError(f"No existe video: {video_path}")
+        raise FileNotFoundError(f"Video does not exist: {video_path}")
 
     for existing in project["assets"].get("videos", []):
         if Path(existing["path"]).resolve() == video_path:
-            raise ValueError(f"El video ya esta agregado a este proyecto: {existing['name']}")
+            raise ValueError(f"The video is already added to this project: {existing['name']}")
 
     engine_root = resolve_engine_root(project["workspace"].get("engine_root"))
     _add_scripts_to_path(engine_root)
@@ -92,7 +92,7 @@ def add_video(
 
 def list_candidate_videos(folder: Path, recursive: bool = False) -> list[Path]:
     if not folder.is_dir():
-        raise FileNotFoundError(f"No existe carpeta de videos: {folder}")
+        raise FileNotFoundError(f"Video folder does not exist: {folder}")
 
     iterator = folder.rglob("*") if recursive else folder.glob("*")
     return sorted(
@@ -132,10 +132,10 @@ def add_videos_from_dir(
                 added.pop()
                 skipped.append({
                     "path": str(path),
-                    "reason": f"Fuera del rango GPX: {removed['name']}",
+                    "reason": f"Outside GPX range: {removed['name']}",
                 })
         except ValueError as exc:
-            if "ya esta agregado" in str(exc):
+            if "already added" in str(exc):
                 skipped.append({
                     "path": str(path),
                     "reason": str(exc),
@@ -180,10 +180,12 @@ def remove_video(project: dict[str, Any], video_key: str) -> dict[str, Any]:
         remaining.append(video)
 
     if not removed:
-        raise ValueError(f"No se encontro video por id o nombre: {video_key}")
+        raise ValueError(f"Video not found by ID or name: {video_key}")
 
     project["assets"]["videos"] = remaining
     project["timelines"] = []
     touch_project(project)
     save_project(project)
     return removed
+
+
