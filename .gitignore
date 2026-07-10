@@ -35,3 +35,8 @@ __pycache__/
 !resources/assets/
 !resources/assets/logo.png
 !resources/assets/iso.png
+
+# Build ejecutable UI
+build/
+dist/
+*.spec

@@ -10,12 +10,17 @@ The central rule is that the GPX leads the project: it defines date, start time,
 
 ## Current Status
 
-The project has two layers:
+The project now has three pieces:
 
 - Existing console engine: technical validation, preview generation, and final render.
-- `ui_core`: CLI foundation for the future visual UI, with centralized projects, video validation, timeline, export settings, preview, final render, and logs.
+- `ui_core`: CLI/backend foundation, with centralized projects, video validation, timeline, export settings, preview, final render, and logs.
+- `ui_app`: first PySide6 visual shell, intentionally separate from `ui_core` and ready to connect backend services step by step.
 
-The PySide6 visual UI is not implemented yet. The CLI layer is the functional backend first.
+Current UI shell:
+
+- Lists centralized projects from `%APPDATA%\MyTrailStudio\projects`.
+- Opens a selected project into the active UI state.
+- Creates new projects from name, GPX file, and output folder.
 
 ## Requirements
 
@@ -23,6 +28,7 @@ The PySide6 visual UI is not implemented yet. The CLI layer is the functional ba
 - Python 3.10 or newer available as `python`.
 - FFmpeg and FFprobe available in `PATH`.
 - Python dependencies used by the engine, including Pillow.
+- Optional UI dependency: PySide6 from `requirements-ui.txt`.
 - `resources/font` folder present.
 - `resources/assets` folder present with the application logo and isotype.
 - MP4/MOV videos with a usable creation date. The system first uses video metadata `creation_time`; if missing, it uses the file creation date.
@@ -56,7 +62,11 @@ ffprobe -version
     cli.py
     models\
     services\
+  ui_app\
+    app.py
+    main_window.py
   mts.ps1
+  mts_ui.ps1
   run_overlay.ps1
   run_mts_overlay_pipeline.ps1
   run_mts_integral_test.ps1
@@ -83,6 +93,25 @@ ffprobe -version
 
 ```powershell
 .\mts.ps1 --help
+```
+
+5. Optional: install and launch the UI shell:
+
+```powershell
+python -m pip install -r requirements-ui.txt
+.\mts_ui.ps1
+```
+
+For double-click launch on Windows:
+
+```powershell
+.\MyTrailStudio.cmd
+```
+
+To build a standalone `.exe`:
+
+```powershell
+.\build_mts_ui_exe.ps1
 ```
 
 ## Brand Assets
@@ -210,8 +239,7 @@ The new CLI uses temporary configuration and does not modify `input/pipeline_con
 
 ## Next Steps
 
-1. Prepare the PySide6 visual UI on top of `ui_core`.
-2. Create the visual project wizard: GPX, route name, output, and videos.
-3. Create the visual video manager: import, GPX status, hyperlapse, manual date.
-4. Create the export and render screen with confirmation.
-5. Extract configurable layout without breaking the approved current layout.
+1. Create the visual video manager: import, GPX status, hyperlapse, manual date.
+2. Create the validation view with coverage, warnings, errors, and gaps.
+3. Create the export and render screen with confirmation.
+4. Extract configurable layout without breaking the approved current layout.

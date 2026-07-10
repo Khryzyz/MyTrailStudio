@@ -18,3 +18,24 @@ Use the MTS wrapper from the project root:
 ```powershell
 .\mts.ps1 --help
 ```
+
+## UI Preview
+
+The first PySide6 shell is available as an optional desktop UI:
+
+```powershell
+python -m pip install -r requirements-ui.txt
+.\mts_ui.ps1
+```
+
+For double-click launch on Windows, use:
+
+```powershell
+.\MyTrailStudio.cmd
+```
+
+To build a standalone `.exe`:
+
+```powershell
+.\build_mts_ui_exe.ps1
+```
