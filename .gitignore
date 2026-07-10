@@ -30,3 +30,8 @@ __pycache__/
 *.png
 *.jpg
 *.jpeg
+
+# Assets oficiales de la aplicacion
+!resources/assets/
+!resources/assets/logo.png
+!resources/assets/iso.png

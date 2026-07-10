@@ -20,6 +20,7 @@ The PySide6 visual UI is not implemented yet. The CLI layer is the functional ba
 - FFmpeg and FFprobe available in `PATH`.
 - Python dependencies used by the engine, including Pillow.
 - `resources/font` folder present.
+- `resources/assets` folder present with the application logo and isotype.
 - MP4/MOV videos with a usable creation date. The system first uses video metadata `creation_time`; if missing, it uses the file creation date.
 
 Quick checks:
@@ -38,6 +39,9 @@ ffprobe -version
     pipeline_config.json
   output\
   resources\
+    assets\
+      logo.png
+      iso.png
     font\
   scripts\
     validate_pipeline.py
@@ -76,6 +80,13 @@ ffprobe -version
 ```powershell
 .\mts.ps1 --help
 ```
+
+## Brand Assets
+
+Application brand assets live in `resources/assets`:
+
+- `logo.png`: full My Trail Studio logo for splash screens, headers, and documentation.
+- `iso.png`: compact isotype for app icons, window chrome, and small UI placements.
 
 ## UI/CLI Projects
 
