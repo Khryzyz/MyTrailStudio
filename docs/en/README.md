@@ -1,5 +1,9 @@
 # My Trail Studio
 
+<p align="center">
+  <img src="../../resources/assets/logo.png" alt="My Trail Studio logo" width="420">
+</p>
+
 Engine and CLI layer for creating route videos with overlays from action-camera videos and GPX tracks.
 
 The central rule is that the GPX leads the project: it defines date, start time, end time, base duration, distance, elevation, and the data used by overlays, timelines, and auxiliary views.

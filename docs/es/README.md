@@ -1,5 +1,9 @@
 # My Trail Studio
 
+<p align="center">
+  <img src="../../resources/assets/logo.png" alt="Logo de My Trail Studio" width="420">
+</p>
+
 Motor y capa CLI para crear videos con overlay a partir de videos de camaras de accion y tracks GPX.
 
 El principio central del proyecto es que el GPX manda: define fecha, hora de inicio, hora de fin, duracion base, distancia, altura y datos usados por overlays, timeline y vistas auxiliares.
