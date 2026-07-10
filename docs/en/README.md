@@ -21,6 +21,9 @@ Current UI shell:
 - Lists centralized projects from `%APPDATA%\MyTrailStudio\projects`.
 - Opens a selected project into the active UI state.
 - Creates new projects from name, GPX file, and output folder.
+- Imports individual videos or full folders into the active project.
+- Runs project validation and engine dry-run validation.
+- Applies export presets, generates previews, and starts final renders with confirmation.
 
 ## Requirements
 
@@ -239,7 +242,7 @@ The new CLI uses temporary configuration and does not modify `input/pipeline_con
 
 ## Next Steps
 
-1. Create the visual video manager: import, GPX status, hyperlapse, manual date.
-2. Create the validation view with coverage, warnings, errors, and gaps.
-3. Create the export and render screen with confirmation.
+1. Add manual video timestamp editing in the UI.
+2. Add non-blocking progress for long preview/render operations.
+3. Add output/log quick-open actions in the UI.
 4. Extract configurable layout without breaking the approved current layout.

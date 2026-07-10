@@ -21,6 +21,9 @@ Estado actual de la UI:
 - Lista proyectos centralizados desde `%APPDATA%\MyTrailStudio\projects`.
 - Abre un proyecto seleccionado dentro del estado activo de la UI.
 - Crea proyectos nuevos desde nombre, archivo GPX y carpeta `output`.
+- Importa videos individuales o carpetas completas al proyecto activo.
+- Ejecuta validacion del proyecto y validacion tecnica del motor.
+- Aplica presets de exportacion, genera previews e inicia render final con confirmacion.
 
 ## Requerimientos
 
@@ -239,9 +242,9 @@ La CLI nueva usa configuracion temporal y no modifica `input/pipeline_config.jso
 
 ## Next Steps
 
-1. Crear gestor visual de videos: importacion, estado GPX, hyperlapse, fecha manual.
-2. Crear pantalla de validacion con cobertura, warnings, errores y huecos.
-3. Crear pantalla de exportacion y render con confirmacion.
+1. Agregar edicion manual de fecha/hora de video en la UI.
+2. Agregar progreso no bloqueante para preview/render largos.
+3. Agregar accesos rapidos para abrir output/logs desde la UI.
 4. Extraer layout configurable sin romper el layout aprobado actual.
 
 
