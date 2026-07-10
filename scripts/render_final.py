@@ -146,7 +146,7 @@ def write_render_report(manifest, manifest_path, final_path, render_profile):
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     with open(txt_path, "w", encoding="utf-8") as f:
-        f.write("ActionCamera / GPX Overlay Render Report\n")
+        f.write("My Trail Studio Render Report\n")
         f.write(f"Generado UTC: {report['generated_at_utc']}\n")
         f.write(f"Final: {final_path}\n")
         f.write(f"GPX: {manifest['gpx']['name']}\n")

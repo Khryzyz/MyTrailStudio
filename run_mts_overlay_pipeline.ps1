@@ -17,7 +17,7 @@ if ($ResumeMode) {
 
 Write-Host ""
 Write-Host "====================================="
-Write-Host " ActionCamera / GPX Overlay Pipeline"
+Write-Host " My Trail Studio Pipeline"
 Write-Host "====================================="
 Write-Host ""
 
@@ -154,6 +154,7 @@ if ($manifest.config.output.preview.add -eq $true) {
         exit $LASTEXITCODE
     }
 }
+
 
 
 

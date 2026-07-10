@@ -32,7 +32,7 @@ def require_safe_target(root, path):
         normalize(os.path.join(root, "resources")),
         normalize(os.path.join(root, "resources", "font")),
         normalize(os.path.join(root, "input", "pipeline_config.json")),
-        normalize(os.path.join(root, "run_actioncamera_overlay_pipeline.ps1")),
+        normalize(os.path.join(root, "run_mts_overlay_pipeline.ps1")),
         normalize(os.path.join(root, ".gitignore")),
     }
 

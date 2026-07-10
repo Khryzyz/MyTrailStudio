@@ -1,3 +1,3 @@
-"""Core services for the future ActionCamera/GPX Overlay UI."""
+"""Core services for My Trail Studio."""
 
 

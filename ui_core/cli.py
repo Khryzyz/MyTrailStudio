@@ -375,7 +375,7 @@ def cmd_delete_project(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="python -m ui_core.cli")
+    parser = argparse.ArgumentParser(prog=".\\mts.ps1")
     parser.add_argument("--app-data", help="Carpeta central de datos de la app.")
 
     subparsers = parser.add_subparsers(required=True)

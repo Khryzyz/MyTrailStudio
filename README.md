@@ -1,4 +1,4 @@
-# ActionCamera / GPX Overlay Pipeline
+# My Trail Studio
 
 Motor y capa CLI para crear videos con overlay a partir de videos de camaras de accion y tracks GPX.
 
@@ -33,7 +33,7 @@ ffprobe -version
 ## Estructura
 
 ```text
-J:\Fotos\ActionCamera
+J:\Fotos\MyTrailStudio
   input\
     pipeline_config.json
   output\
@@ -49,8 +49,8 @@ J:\Fotos\ActionCamera
     models\
     services\
   run_overlay.ps1
-  run_actioncamera_overlay_pipeline.ps1
-  run_project_integral_test.ps1
+  run_mts_overlay_pipeline.ps1
+  run_mts_integral_test.ps1
 ```
 
 ## Instalacion
@@ -59,7 +59,7 @@ J:\Fotos\ActionCamera
 2. Abre PowerShell en la raiz del engine:
 
 ```powershell
-cd J:\Fotos\ActionCamera
+cd J:\Fotos\MyTrailStudio
 ```
 
 3. Confirma Python y FFmpeg:
@@ -73,7 +73,7 @@ ffprobe -version
 4. Verifica la CLI:
 
 ```powershell
-python -m ui_core.cli --help
+.\mts.ps1 --help
 ```
 
 ## Proyectos UI/CLI
@@ -81,8 +81,10 @@ python -m ui_core.cli --help
 Los proyectos no se guardan dentro de `input` ni junto al engine. Se centralizan en:
 
 ```text
-%APPDATA%\ActionCameraOverlayUI\projects\<project-id>
+%APPDATA%\MyTrailStudio\projects\<project-id>
 ```
+
+Si vienes de una version anterior con otra carpeta de app, los proyectos no se borran. Puedes copiarlos a `%APPDATA%\MyTrailStudio\projects` o usar `--app-data` para apuntar a la carpeta anterior.
 
 Cada proyecto referencia GPX/videos originales sin moverlos. Los subproductos temporales y logs quedan en la carpeta central del proyecto o en la carpeta de salida configurada.
 
@@ -91,13 +93,13 @@ Cada proyecto referencia GPX/videos originales sin moverlos. Los subproductos te
 Crear proyecto:
 
 ```powershell
-python -m ui_core.cli create-project --name "Mi Ruta" --gpx "E:\Ruta\track.gpx" --output "E:\Ruta\salida"
+.\mts.ps1 create-project --name "Mi Ruta" --gpx "E:\Ruta\track.gpx" --output "E:\Ruta\salida"
 ```
 
 Agregar videos desde carpeta:
 
 ```powershell
-python -m ui_core.cli add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0
+.\mts.ps1 add-videos-dir --project "<project-id>" --dir "E:\Ruta" --mode hyperlapse --hyperlapse-speed 2.0
 ```
 
 Si un video no tiene fecha correcta, se puede ajustar manualmente con `set-video-time`.
@@ -105,31 +107,31 @@ Si un video no tiene fecha correcta, se puede ajustar manualmente con `set-video
 Validar proyecto:
 
 ```powershell
-python -m ui_core.cli validate-project --project "<project-id>"
+.\mts.ps1 validate-project --project "<project-id>"
 ```
 
 Configurar exportacion:
 
 ```powershell
-python -m ui_core.cli set-export --project "<project-id>" --resolution 1080p --fps 30 --output-speed 3.5 --remove-audio --single-final-video --transitions --closing --closing-message "Ruta Finalizada" --closing-seconds 3
+.\mts.ps1 set-export --project "<project-id>" --resolution 1080p --fps 30 --output-speed 3.5 --remove-audio --single-final-video --transitions --closing --closing-message "Ruta Finalizada" --closing-seconds 3
 ```
 
 Generar preview:
 
 ```powershell
-python -m ui_core.cli engine-preview --project "<project-id>" --seconds 10 --quiet
+.\mts.ps1 engine-preview --project "<project-id>" --seconds 10 --quiet
 ```
 
 Render final:
 
 ```powershell
-python -m ui_core.cli engine-render-final --project "<project-id>" --confirm "RENDER_FINAL" --quiet
+.\mts.ps1 engine-render-final --project "<project-id>" --confirm "RENDER_FINAL" --quiet
 ```
 
 Resumen:
 
 ```powershell
-python -m ui_core.cli project-summary --project "<project-id>"
+.\mts.ps1 project-summary --project "<project-id>"
 ```
 
 ## Prueba Integral
@@ -137,13 +139,13 @@ python -m ui_core.cli project-summary --project "<project-id>"
 Sin render final:
 
 ```powershell
-.\run_project_integral_test.ps1 -ProjectId "<project-id>"
+.\run_mts_integral_test.ps1 -ProjectId "<project-id>"
 ```
 
 Con render final:
 
 ```powershell
-.\run_project_integral_test.ps1 -ProjectId "<project-id>" -RunFinalRender
+.\run_mts_integral_test.ps1 -ProjectId "<project-id>" -RunFinalRender
 ```
 
 ## Salidas
@@ -168,7 +170,7 @@ render_report.txt
 Los comandos de motor guardan logs en:
 
 ```text
-%APPDATA%\ActionCameraOverlayUI\projects\<project-id>\logs
+%APPDATA%\MyTrailStudio\projects\<project-id>\logs
 ```
 
 Usa `--quiet` para reducir ruido de consola y conservar detalle en logs.
@@ -193,6 +195,10 @@ La CLI nueva usa configuracion temporal y no modifica `input/pipeline_config.jso
 6. Crear gestor visual de videos: importacion, estado GPX, hyperlapse, fecha manual.
 7. Crear pantalla de exportacion y render con confirmacion.
 8. Extraer layout configurable sin romper el layout aprobado actual.
+
+
+
+
 
 
 

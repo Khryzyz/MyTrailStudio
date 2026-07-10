@@ -20,7 +20,7 @@ def resolve_engine_root(value: str | None = None) -> Path:
     if missing:
         missing_text = ", ".join(missing)
         raise FileNotFoundError(
-            "La carpeta actual no parece ser el engine ActionCamera/GPX Overlay. "
+            "La carpeta actual no parece ser el engine My Trail Studio. "
             f"Root usado: {root}. Faltan: {missing_text}. "
             "Ejecuta el comando desde la carpeta del engine o usa --engine-root."
         )

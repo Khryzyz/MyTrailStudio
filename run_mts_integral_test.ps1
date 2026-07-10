@@ -32,11 +32,11 @@ function Run-Step {
 }
 
 Run-Step "1. Resumen inicial" {
-    python -m ui_core.cli project-summary --project $ProjectId
+    .\mts.ps1 project-summary --project $ProjectId
 }
 
 Run-Step "2. Configurar exportacion final" {
-    python -m ui_core.cli set-export `
+    .\mts.ps1 set-export `
         --project $ProjectId `
         --resolution $Resolution `
         --fps $Fps `
@@ -50,20 +50,20 @@ Run-Step "2. Configurar exportacion final" {
 }
 
 Run-Step "3. Validar motor" {
-    python -m ui_core.cli engine-validate --project $ProjectId --quiet
+    .\mts.ps1 engine-validate --project $ProjectId --quiet
 }
 
 Run-Step "4. Generar preview" {
-    python -m ui_core.cli engine-preview --project $ProjectId --seconds $PreviewSeconds --quiet
+    .\mts.ps1 engine-preview --project $ProjectId --seconds $PreviewSeconds --quiet
 }
 
 Run-Step "5. Revisar preview en resumen" {
-    python -m ui_core.cli project-summary --project $ProjectId
+    .\mts.ps1 project-summary --project $ProjectId
 }
 
 if ($RunFinalRender) {
     Run-Step "6. Render final" {
-        python -m ui_core.cli engine-render-final --project $ProjectId --confirm "RENDER_FINAL" --quiet
+        .\mts.ps1 engine-render-final --project $ProjectId --confirm "RENDER_FINAL" --quiet
     }
 } else {
     Write-Host ""
@@ -74,7 +74,7 @@ if ($RunFinalRender) {
 }
 
 Run-Step "7. Revisar carpeta final" {
-    $summaryJson = python -m ui_core.cli inspect-project --project $ProjectId | ConvertFrom-Json
+    $summaryJson = .\mts.ps1 inspect-project --project $ProjectId | ConvertFrom-Json
     $finalDir = Join-Path $summaryJson.export.output_dir "final"
     Write-Host "Carpeta final: $finalDir"
     if (Test-Path $finalDir) {
@@ -85,8 +85,8 @@ Run-Step "7. Revisar carpeta final" {
 }
 
 Run-Step "8. Validacion y resumen final" {
-    python -m ui_core.cli validate-project --project $ProjectId
-    python -m ui_core.cli project-summary --project $ProjectId
+    .\mts.ps1 validate-project --project $ProjectId
+    .\mts.ps1 project-summary --project $ProjectId
 }
 
 Write-Host ""

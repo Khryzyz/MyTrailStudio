@@ -5,8 +5,8 @@ import shutil
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 
-csv_path = r"J:\Fotos\ActionCamera\20260628_153709_overlay_1s.csv"
-frames_dir = r"J:\Fotos\ActionCamera\overlay_frames_final_60_70"
+csv_path = r"J:\Fotos\MyTrailStudio\20260628_153709_overlay_1s.csv"
+frames_dir = r"J:\Fotos\MyTrailStudio\overlay_frames_final_60_70"
 
 W, H = 2688, 1512
 start_second = 60
@@ -276,5 +276,6 @@ for frame in range(total_frames):
 
 print("Frames creados:", total_frames)
 print("Carpeta:", frames_dir)
+
 
 

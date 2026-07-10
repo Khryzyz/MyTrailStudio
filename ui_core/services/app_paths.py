@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-APP_DIR_NAME = "ActionCameraOverlayUI"
+APP_DIR_NAME = "MyTrailStudio"
 
 
 def default_app_data_dir() -> Path:
