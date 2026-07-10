@@ -118,13 +118,26 @@ def validate_config(config, root):
 
     videos_dir = resolve_path(root, config["input"]["videos_dir"])
     gpx_dir = resolve_path(root, config["input"]["gpx_dir"])
+    video_files = [
+        resolve_path(root, path)
+        for path in config["input"].get("video_files", [])
+    ]
+    gpx_path = config["input"].get("gpx_path")
+    gpx_path = resolve_path(root, gpx_path) if gpx_path else ""
     output_dir = resolve_path(root, config["output"]["dir"])
     font_path = resolve_path(root, config["setting"]["layout"]["font_path"])
 
-    if not os.path.isdir(videos_dir):
+    if video_files:
+        for video_path in video_files:
+            if not os.path.isfile(video_path):
+                errors.append(f"input.video_files no existe: {video_path}")
+    elif not os.path.isdir(videos_dir):
         errors.append(f"input.videos_dir no existe: {videos_dir}")
 
-    if not os.path.isdir(gpx_dir):
+    if gpx_path:
+        if not os.path.isfile(gpx_path):
+            errors.append(f"input.gpx_path no existe: {gpx_path}")
+    elif not os.path.isdir(gpx_dir):
         errors.append(f"input.gpx_dir no existe: {gpx_dir}")
 
     if not os.path.isdir(output_dir):
@@ -135,7 +148,9 @@ def validate_config(config, root):
 
     return errors, warnings, tz, {
         "videos_dir": videos_dir,
+        "video_files": video_files,
         "gpx_dir": gpx_dir,
+        "gpx_path": gpx_path,
         "output_dir": output_dir,
         "font_path": font_path
     }
@@ -193,11 +208,12 @@ def print_validate_only_summary(manifest):
 def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("--root", required=True)
+    parser.add_argument("--config")
     parser.add_argument("--validate-only", action="store_true")
     known, unknown = parser.parse_known_args()
 
     root = known.root
-    config_path = os.path.join(root, "input", "pipeline_config.json")
+    config_path = known.config or os.path.join(root, "input", "pipeline_config.json")
 
     config = load_config(config_path)
     config = parse_overrides(unknown, config)
@@ -212,8 +228,8 @@ def main():
         sys.exit(1)
 
     print("CONFIGURACION RESUELTA")
-    print("Input videos:", paths["videos_dir"])
-    print("Input GPX:", paths["gpx_dir"])
+    print("Input videos:", paths["video_files"] if paths["video_files"] else paths["videos_dir"])
+    print("Input GPX:", paths["gpx_path"] if paths["gpx_path"] else paths["gpx_dir"])
     print("Output:", paths["output_dir"])
     print("Video mode:", config["input"]["video_mode"])
     print("Input hyperlapse speed:", config["input"]["hyperlapse_speed"])
@@ -234,13 +250,16 @@ def main():
         for w in warnings:
             print(" -", w)
 
-    videos = list_video_files(paths["videos_dir"])
+    videos = paths["video_files"] if paths["video_files"] else list_video_files(paths["videos_dir"])
 
-    gpx_files = sorted([
-        os.path.join(paths["gpx_dir"], f)
-        for f in os.listdir(paths["gpx_dir"])
-        if f.lower().endswith(".gpx")
-    ])
+    if paths["gpx_path"]:
+        gpx_files = [paths["gpx_path"]]
+    else:
+        gpx_files = sorted([
+            os.path.join(paths["gpx_dir"], f)
+            for f in os.listdir(paths["gpx_dir"])
+            if f.lower().endswith(".gpx")
+        ])
 
     if not videos:
         raise Exception("No hay videos MP4/MOV en input.videos_dir.")
@@ -372,5 +391,14 @@ def main():
     print("Validacion tecnica OK.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Operacion cancelada.")
+        sys.exit(130)
+    except Exception as e:
+        print("")
+        print("ERROR:")
+        print(f" - {e}")
+        sys.exit(1)
 

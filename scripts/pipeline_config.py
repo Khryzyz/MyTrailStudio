@@ -8,7 +8,9 @@ from copy import deepcopy
 DEFAULT_CONFIG = {
     "input": {
         "videos_dir": "input",
+        "video_files": [],
         "gpx_dir": "input",
+        "gpx_path": "",
         "timezone": "America/Bogota",
         "video_mode": "normal",
         "hyperlapse_speed": 2.0,
